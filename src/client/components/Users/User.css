@@ -1,0 +1,80 @@
+.h3Field-class{
+    font-family: 'Patrick Hand';
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.spanDta-field{
+    font-size: 16px;
+    font-family: 'Patrick Hand';
+    font-weight: 400;
+    vertical-align: revert;
+}
+.header-RemDetails{
+    margin-top: -25px;
+}
+
+
+.flexdetails{
+margin: auto;
+    
+
+}
+
+.flex-individual{ 
+    display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-gap: 25px;
+  
+  
+    
+}
+
+.detailCardNew{
+    margin-top: 12px;
+    background-color: #fff;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    padding: 24px;
+    padding-top: 22px;
+    position: relative;
+    flex-basis: 31%;
+    overflow: auto;
+}
+.noRecords-div{
+    margin-top: 12px;
+    background-color: #fff;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    padding: 24px;
+    padding-top: 22px;
+    position: relative;
+}
+
+.remList-single{
+    margin-top: 10px;
+}
+
+.railCard-heading{
+    font-family: 'Patrick Hand';
+    font-size: 20px;
+    font-weight: 500;
+}
+
+
+
+@media screen and (max-width:768px){
+    .flex-individual{
+        display: flex;
+        justify-content: space-evenly;
+        flex-direction: column;
+    }
+}
+
+@media screen and (min-width:768px) and (max-width:950px){
+    .flex-individual{
+        grid-template-columns: 1fr 1fr;
+    }
+}

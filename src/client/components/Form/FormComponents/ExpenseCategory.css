@@ -1,0 +1,20 @@
+.otherInputField{
+    display: block;
+   width: 100%;
+    border-bottom: 1px solid #ccc;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    transition: all 0.25s ease-in-out;
+    font-size: 16px;
+   
+    margin: 25px 0;
+
+}
+
+.otherInputField:focus-visible{
+outline: none;
+border-bottom: 2px solid rgb(125, 67, 38);
+
+}
+

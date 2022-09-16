@@ -1,0 +1,122 @@
+
+
+.header-logo{
+border-radius: 10px;
+box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+height: 100%;
+width: 100%;
+}
+
+
+
+.header{
+    font-family: 'Patrick Hand', fantasy;
+    font-size: 32px;
+    font-weight: 400;
+}
+
+.para{
+    white-space: pre-wrap;
+    font-family: Roboto,Arial,sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: .2px;
+    line-height: 20px;
+    color: #202124;
+    margin-top: 12px;
+}
+
+.logOutBtn{
+    cursor: pointer;
+    display: inline-block;
+    min-height: 1em;
+    outline: 0;
+    border: none;
+    vertical-align: baseline;
+    
+    color: rgba(0,0,0,.6);
+    font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
+    margin: 0 0.25em 0 0;
+    padding: 0.78571429em 1.5em 0.78571429em;
+    text-transform: none;
+    text-shadow: none;
+    font-weight: 700;
+    line-height: 1em;
+    font-style: normal;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 0.28571429rem;
+  background-color: transparent;
+    font-size: 1rem;
+
+
+}
+
+.adminPanelLink{
+    cursor: pointer;
+    display: inline-block;
+    min-height: 1em;
+    outline: 0;
+    border: none;
+    vertical-align: baseline;
+    
+    color: rgba(0,0,0,.6);
+    font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
+    margin: 0 0.25em 0 0;
+    padding: 0.78571429em 1.5em 0.78571429em;
+    text-transform: none;
+    text-shadow: none;
+    font-weight: 700;
+    line-height: 1em;
+    font-style: normal;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 0.28571429rem;
+  background-color: transparent;
+    font-size: 1rem;
+}
+
+.profile-Btn{
+    cursor: pointer;
+    display: inline-block;
+    min-height: 1em;
+    outline: 0;
+    border: none;
+    vertical-align: baseline;
+    
+    color: rgba(0,0,0,.6);
+    font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
+    margin: 0 0.25em 0 0;
+    padding: 0.78571429em 1.5em 0.78571429em;
+    text-transform: none;
+    text-shadow: none;
+    font-weight: 700;
+    line-height: 1em;
+    font-style: normal;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 0.28571429rem;
+  background-color: transparent;
+    font-size: 1rem;
+
+}
+
+.header-flex{
+  display: flex;
+  justify-content: space-around;
+  flex-direction: row-reverse;
+  margin-top: 20px;
+}
+
+.dropdown{
+  text-align: end;
+}
+
+@media screen and (max-width:849px){
+  .header-flex{
+    flex-direction: column-reverse;
+  }
+  .dropdown{
+    text-align: center;
+  }
+}

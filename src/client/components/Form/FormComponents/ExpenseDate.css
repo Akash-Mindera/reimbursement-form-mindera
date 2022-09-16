@@ -1,0 +1,62 @@
+.expenseInput{
+    display: block;
+    margin-top: 25px;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    transition: all 0.25s ease-out;
+    font-size: 16px;
+}
+
+.expenseInput:focus-visible{
+    border-bottom: 2px solid  rgb(125, 67, 38);
+    outline: none !important;
+}
+
+.formHeading-h3{
+    font-family: 'Patrick Hand', fantasy;
+    font-size: 14x;
+    font-weight: 400;
+}
+
+.label{
+    font-family: Roboto,Arial,sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: .3px;
+    line-height: 16px;
+    color: #70757a;
+   
+}
+
+.sameAsExpenseButton{
+    border: 1px #dadce0 solid;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    color: #1a73e8;
+    height: 36px;
+    line-height: 34px;
+    background-color: #fff;
+    margin-top: 15px;
+    margin-left: 20px;
+}
+
+.invoiceDateDiv{
+    display: flex;
+    justify-content: flex-start;
+    align-items: end;
+}
+
+@media screen and (max-width:372px) {
+.invoiceDateDiv{
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.sameAsExpenseButton{
+margin-left: 0;
+}
+    
+}

@@ -1,0 +1,79 @@
+.form-main__div{
+  margin: 20px auto;
+  max-width: 90vw;
+  width: 640px;
+}
+
+.btnDiv{
+  margin-top: 50px;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
+}
+
+.submitBtn{
+  background-color: rgb(125, 67, 38);
+  display: inline-block;
+  width: 100px;
+  height: 40px;
+  
+  color: #ffffff;
+  border-radius: 5px;
+  font-weight: 500;
+  font-family: "Google Sans",Roboto,Arial,sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.submitBtn:hover{
+  box-shadow: 0px 2px 1px -1px rgb(125 67 38 / 20%), 0px 1px 1px 0px rgb(125 67 38 / 14%), 0px 1px 3px 0px rgb(125 67 38 / 12%);
+}
+
+.submitBtn:disabled{
+  color: red;
+  opacity: 0.5;
+  color: #ffffff;
+}
+
+.clearBtn{
+  background-color: transparent;
+  font-size: 14px;
+  color: rgb(125, 67, 38);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  position: absolute;
+  top: -29px;
+  right: 0;
+  display: inline-block;
+  height: 32px;
+  width: 100px;
+}
+
+.clearBtn:hover{
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.clearFormBtn-div{
+  display: flex;
+  justify-content: end;
+  align-items: flex-end;
+  vertical-align: top;
+  position: relative;
+}
+
+.clearSelect-btn{
+  background-color: transparent;
+  font-size: 14px;
+  color: #5f6368;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.25s ease-in-out;
+}
+
+.clearSelect-btn:hover{
+  background-color: rgba(255, 255, 255, 0.5);
+}
