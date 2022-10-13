@@ -1,225 +1,296 @@
 import React, { Fragment } from "react";
-import { useState } from "react";
-import Pagination from "../../utils/Pagination";
+import { useState, useEffect } from "react";
+import { auth } from "../../../server/firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
+import ReactPaginate from "react-paginate";
+import { trackPromise } from "react-promise-tracker";
+import { usePromiseTracker } from "react-promise-tracker";
+import { ThreeDots } from "react-loader-spinner";
+
+import axios from "axios";
 import "./User.css";
 const RejectedRecord = (props) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [postsPerPage] = useState(6);
+  const [user] = useAuthState(auth);
+  const { promiseInProgress } = usePromiseTracker();
+  const [rejectedUserData, setRejectedUserData] = useState([]);
+  const [pageCount, setPageCount] = useState(0);
 
-  const indexOfLastPost = currentPage * postsPerPage;
-  const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  useEffect(() => {
+    if (props.tab3 === true) {
+      trackPromise(getResponse());
+    }
+  }, [user, props.tab3, props.employeeID]);
 
-  const filteredUserRejectedRecords = props.userRemRecords.filter(
-    (id) => props.userData[id].IsApproved === "No"
-  );
+  const getResponse = async () => {
+    if (props.employeeID) {
+      const response = await axios.get(
+        `/rejectedUserData/${props.employeeID}?page=0`,
+        {
+          headers: {
+            authToken: user.accessToken,
+          },
+        }
+      );
+      setRejectedUserData(response.data.data);
+      setPageCount(response.data.total);
+    }
+  };
 
-  const currentUserRejectedRecords = filteredUserRejectedRecords.slice(
-    indexOfFirstPost,
-    indexOfLastPost
-  );
+  const handlePageClick = async (data) => {
+    let currentPage = data.selected;
+    const response = await axios.get(
+      `/rejectedUserData/${props.employeeID}?page=${currentPage}`,
+      {
+        headers: {
+          authToken: user.accessToken,
+        },
+      }
+    );
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+    setRejectedUserData(response.data.data);
+  };
+
+  const fetchLatestData = () => {
+    trackPromise(getResponse());
+  };
 
   return (
     <Fragment>
-      {" "}
-      {currentUserRejectedRecords.length !== 0 ? (
-        <div className="detailsMaindiv">
-          <div className="flexdetails">
-            <div className="flex-individual">
-              {currentUserRejectedRecords.map((id) => (
-                <div key={id} className="detailCardNew">
-                  <div>
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Reimbursement ID:{" "}
-                        <span className="spanDta-field">{id}</span>
-                      </h3>
-                    </div>
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Employee ID:{" "}
-                        <span className="spanDta-field">
-                          {props.userData[id].UserSpecificId}
-                        </span>
-                      </h3>
-                    </div>
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Rejected For:{" "}
-                        <span className="spanDta-field">
-                          {props.userData[id].RejectedAccount}
-                        </span>
-                      </h3>
-                    </div>
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Employee Mail:{" "}
-                        <span className="spanDta-field">
-                          {props.userData[id].EmployeeMail}
-                        </span>
-                      </h3>
-                    </div>
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Expense Date:{" "}
-                        <span className="spanDta-field">
-                          {props.userData[id].ExpenseDate}
-                        </span>
-                      </h3>
-                    </div>
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Expense Category:{" "}
-                        <span className="spanDta-field">
-                          {props.userData[id].ExpenseCategory}
-                        </span>
-                      </h3>
-                    </div>
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Amount To Be Refunded:{" "}
-                        <span className="spanDta-field">
-                          {props.userData[id].AmountToBeRefunded}
-                        </span>
-                      </h3>
-                    </div>
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Invoice Attachment:{" "}
-                        <a
-                          download={props.userData[id].Invoice}
-                          href={props.userData[id].Invoice}
-                          title="Download pdf document"
-                        >
-                          Link
-                        </a>
-                      </h3>
-                    </div>
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Invoice Date:{" "}
-                        <span className="spanDta-field">
-                          {props.userData[id].InvoiceDate}
-                        </span>
-                      </h3>
-                    </div>
-                    {props.userData[id].ExpenseDescription ? (
-                      <div className="remList-single">
-                        <h3 className="h3Field-class">
-                          Expense Description:{" "}
-                          <span className="spanDta-field">
-                            {props.userData[id].ExpenseDescription}
-                          </span>
-                        </h3>
-                      </div>
-                    ) : null}
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Invoice Number:{" "}
-                        <span className="spanDta-field">
-                          {props.userData[id].InvoiceNo}
-                        </span>
-                      </h3>
-                    </div>
-                    {props.userData[id].VendorName ? (
-                      <div className="remList-single">
-                        <h3 className="h3Field-class">
-                          Vendor Name:{" "}
-                          <span className="spanDta-field">
-                            {props.userData[id].VendorName}
-                          </span>
-                        </h3>
-                      </div>
-                    ) : null}
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Employee Consent:{" "}
-                        <span className="spanDta-field">
-                          {props.userData[id].EmployeeConsent}
-                        </span>
-                      </h3>
-                    </div>
-                    {props.userData[id].PaidTo ? (
-                      <div className="remList-single">
-                        <h3 className="h3Field-class">
-                          Paid To:{" "}
-                          <span className="spanDta-field">
-                            {props.userData[id].PaidTo}
-                          </span>
-                        </h3>
-                      </div>
-                    ) : null}
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Time:{" "}
-                        <span className="spanDta-field">
-                          {props.userData[id].Time}
-                        </span>
-                      </h3>
-                    </div>
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Rejection Reason:{" "}
-                        <span className="spanDta-field">
-                          {props.userData[id].RejectionReason}
-                        </span>
-                      </h3>
-                    </div>
-                  </div>
-
-                  {props.userData[id].IsApproved === "No" && (
-                    <div
-                      className="ui two buttons"
-                      style={{ paddingTop: "12px" }}
-                    >
-                      <button
-                        className="ui red button"
-                        style={{
-                          fontSize: "18px",
-                          cursor: "default",
-                          fontFamily: "Patrick Hand",
-                          fontWeight: "500",
-                        }}
-                      >
-                        Rejected
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-          <div
-            style={{
-              margin: "auto",
-              maxWidth: "80%",
-              paddingTop: "20px",
-            }}
-          >
-            <Pagination
-              postsPerPage={postsPerPage}
-              totalPosts={filteredUserRejectedRecords.length}
-              paginate={paginate}
-            />
-          </div>
+      {promiseInProgress === true ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItem: "center",
+          }}
+        >
+          <ThreeDots
+            height="80"
+            width="80"
+            radius="9"
+            color="#4fa94d"
+            ariaLabel="three-dots-loading"
+            wrapperStyle={{}}
+            wrapperClassName=""
+            visible={true}
+          />
         </div>
       ) : (
-        <div
-          style={{ margin: "auto", marginTop: "20px" }}
-          className="noRecords-div"
-        >
-          <p
-            style={{
-              fontFamily: "Patrick Hand",
-              fontSize: "22px",
-              color: "black",
-              fontWeight: "500",
-              textAlign: "center",
-            }}
-          >
-            No Rejected Records Founds !
-          </p>
+        <div>
+          <button className="ui teal basic button" onClick={fetchLatestData}>
+            {promiseInProgress === true ? "Fetching..." : "Fetch Latest Data"}
+          </button>
+          {rejectedUserData.length !== 0 ? (
+            <div className="detailsMaindiv">
+              <div className="flexdetails">
+                <div className="flex-individual">
+                  {rejectedUserData.map((data) => (
+                    <div key={data._id} className="detailCardNew">
+                      <div>
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Reimbursement ID:{" "}
+                            <span className="spanDta-field">{data._id}</span>
+                          </h3>
+                        </div>
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Employee ID:{" "}
+                            <span className="spanDta-field">
+                              {data.UserSpecificId}
+                            </span>
+                          </h3>
+                        </div>
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Rejected For:{" "}
+                            <span className="spanDta-field">
+                              {data.RejectedAccount}
+                            </span>
+                          </h3>
+                        </div>
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Employee Mail:{" "}
+                            <span className="spanDta-field">
+                              {data.EmployeeMail}
+                            </span>
+                          </h3>
+                        </div>
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Expense Date:{" "}
+                            <span className="spanDta-field">
+                              {data.ExpenseDate}
+                            </span>
+                          </h3>
+                        </div>
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Expense Category:{" "}
+                            <span className="spanDta-field">
+                              {data.ExpenseCategory}
+                            </span>
+                          </h3>
+                        </div>
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Amount To Be Refunded:{" "}
+                            <span className="spanDta-field">
+                              {data.AmountToBeRefunded}
+                            </span>
+                          </h3>
+                        </div>
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Invoice Attachment:{" "}
+                            <a
+                              download={data.Invoice}
+                              href={data.Invoice}
+                              title="Download pdf document"
+                            >
+                              Link
+                            </a>
+                          </h3>
+                        </div>
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Invoice Date:{" "}
+                            <span className="spanDta-field">
+                              {data.InvoiceDate}
+                            </span>
+                          </h3>
+                        </div>
+                        {data.ExpenseDescription ? (
+                          <div className="remList-single">
+                            <h3 className="h3Field-class">
+                              Expense Description:{" "}
+                              <span className="spanDta-field">
+                                {data.ExpenseDescription}
+                              </span>
+                            </h3>
+                          </div>
+                        ) : null}
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Invoice Number:{" "}
+                            <span className="spanDta-field">
+                              {data.InvoiceNo}
+                            </span>
+                          </h3>
+                        </div>
+                        {data.VendorName ? (
+                          <div className="remList-single">
+                            <h3 className="h3Field-class">
+                              Vendor Name:{" "}
+                              <span className="spanDta-field">
+                                {data.VendorName}
+                              </span>
+                            </h3>
+                          </div>
+                        ) : null}
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Employee Consent:{" "}
+                            <span className="spanDta-field">
+                              {data.EmployeeConsent}
+                            </span>
+                          </h3>
+                        </div>
+                        {data.PaidTo ? (
+                          <div className="remList-single">
+                            <h3 className="h3Field-class">
+                              Paid To:
+                              <span className="spanDta-field">
+                                {data.PaidTo}
+                              </span>
+                            </h3>
+                          </div>
+                        ) : null}
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Time:
+                            <span className="spanDta-field">{data.Time}</span>
+                          </h3>
+                        </div>
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Rejection Reason:{" "}
+                            <span className="spanDta-field">
+                              {data.RejectionReason}
+                            </span>
+                          </h3>
+                        </div>
+                      </div>
+
+                      {data.IsApproved === "No" && (
+                        <div
+                          className="ui two buttons"
+                          style={{ paddingTop: "12px" }}
+                        >
+                          <button
+                            className="ui red button"
+                            style={{
+                              fontSize: "18px",
+                              cursor: "default",
+                              fontFamily: "Patrick Hand",
+                              fontWeight: "500",
+                            }}
+                          >
+                            Rejected
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div
+                style={{
+                  margin: "auto",
+                  maxWidth: "80%",
+                  paddingTop: "20px",
+                }}
+              >
+                <ReactPaginate
+                  previousLabel={`previous`}
+                  nextLabel={`next`}
+                  breakLabel={`***`}
+                  pageCount={pageCount}
+                  marginPagesDisplayed={2}
+                  pageRangeDisplayed={3}
+                  onPageChange={handlePageClick}
+                  containerClassName={`pagination justify-content-center`}
+                  pageClassName={`page-item`}
+                  pageLinkClassName={`page-link`}
+                  previousClassName={`page-item`}
+                  previousLinkClassName={`page-link`}
+                  nextClassName={`page-item`}
+                  nextLinkClassName={`page-link`}
+                  breakClassName={`page-item`}
+                  breakLinkClassName={`page-link`}
+                  activeClassName={`active`}
+                />
+              </div>
+            </div>
+          ) : (
+            <div
+              style={{ margin: "auto", marginTop: "20px" }}
+              className="noRecords-div"
+            >
+              <p
+                style={{
+                  fontFamily: "Patrick Hand",
+                  fontSize: "22px",
+                  color: "black",
+                  fontWeight: "500",
+                  textAlign: "center",
+                }}
+              >
+                No Rejected Records Founds !
+              </p>
+            </div>
+          )}
         </div>
       )}
     </Fragment>

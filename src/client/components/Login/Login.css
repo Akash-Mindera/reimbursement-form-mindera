@@ -59,3 +59,7 @@
     color:'darkred';
     font-size: 18px;
   }
+
+  .login__btn:disabled {
+   opacity: 1 !important;
+  }

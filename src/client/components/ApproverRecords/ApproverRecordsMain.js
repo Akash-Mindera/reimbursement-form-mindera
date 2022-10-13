@@ -10,67 +10,41 @@ import ApprovedRecord from "./ApprovedRecords";
 import AwaitingAction from "./AwaitingAction";
 import RejectedRecord from "./RejectedRecords";
 import Footer from "../Footer/Footer";
-import realtimeDbUrl from "../../../server/dataBaseUrl";
 
-import axios from "axios";
 const ApproverRecordsMain = (props) => {
   const [user, loading, error] = useAuthState(auth);
-  const [approverData, setApproverData] = useState("");
+  const [approverData, setApproverData] = useState(false);
   const [approverRemRecords, setApproverRemRecords] = useState([]);
   const [spinner, setSpinner] = useState(false);
   const [tab1, setTab1] = useState(true);
   const [tab2, setTab2] = useState(false);
   const [tab3, setTab3] = useState(false);
-  const [approverAccessToken, setApproverAccessToken] = useState();
+
   const navigate = useNavigate();
 
   useEffect(() => {
     if (loading) return;
     if (user) {
-      setApproverAccessToken(user.accessToken);
-      const timer = setTimeout(() => {
-        if (props.role === "approver") {
-          getApproverData();
-          return;
-        }
-        if (props.role === "user") {
-          return navigate("/");
-        }
-        if (props.role === "admin") {
-          return navigate("/admin-panel");
-        }
-      }, 1000);
-
-      return () => {
-        clearTimeout(timer);
-      };
+      if (props.role === "approver") {
+        // getApproverData();
+        setApproverData(true);
+        return;
+      }
+      if (props.role === "user") {
+        setApproverData(false);
+        return navigate("/");
+      }
+      if (props.role === "admin") {
+        setApproverData(false);
+        return navigate("/admin-panel");
+      }
     } else {
-      setApproverAccessToken();
       return navigate("/login");
     }
-  }, [
-    user,
-    approverAccessToken,
-    loading,
-    props.employeeID,
-    props.name,
-    props.role,
-  ]);
-
-  const approverFilterUrl = `${realtimeDbUrl}/ReimbursementRecords.json?auth=${approverAccessToken}&orderBy="EmployeeRole"&equalTo="approver"`;
-
-  const getApproverData = async () => {
-    setSpinner(true);
-    const response = await axios.get(approverFilterUrl);
-    setApproverData(response.data);
-    setSpinner(false);
-
-    let approverSpecificData = response.data;
-
-    if (approverSpecificData) {
-      setApproverRemRecords(Object.keys(approverSpecificData));
-    }
-  };
+    return () => {
+      // clearTimeout(timer);
+    };
+  }, [user, loading, props.employeeID, props.name, props.role]);
 
   const tabFirstHandler = () => {
     setTab1(true);
@@ -111,7 +85,7 @@ const ApproverRecordsMain = (props) => {
           Approver Records
         </h1>
       </div>
-      {approverData ? (
+      {approverData === true ? (
         <div
           className="ui container"
           style={{

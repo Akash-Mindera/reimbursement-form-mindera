@@ -41,6 +41,7 @@ margin: auto;
     position: relative;
     flex-basis: 31%;
     overflow: auto;
+    transition: all 0.5s ease-out;
 }
 .noRecords-div{
     margin-top: 12px;
@@ -52,6 +53,8 @@ margin: auto;
     padding-top: 22px;
     position: relative;
 }
+
+
 
 .remList-single{
     margin-top: 10px;

@@ -1,15 +1,7 @@
 import { Fragment, useState, useEffect } from "react";
-import { Route, Routes, useNavigate } from "react-router-dom";
-import {
-  useAuthState,
-  useCreateUserWithEmailAndPassword,
-} from "react-firebase-hooks/auth";
+import { Route, Routes } from "react-router-dom";
+import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "./server/firebase";
-
-import "./App.css";
-import { getAuth } from "firebase/auth";
-import UserAuth from "./server/UserAuth";
-import axios from "axios";
 import { db } from "./server/firebase";
 import { query, collection, getDocs, where } from "firebase/firestore";
 import { logout } from "./server/firebase";
@@ -19,19 +11,21 @@ import Form from "./client/components/Form/Form";
 import Login from "./client/components/Login/Login";
 import ApproverMain from "./client/components/Approver/ApproverMain";
 import ApproverRecordsMain from "./client/components/ApproverRecords/ApproverRecordsMain";
-import ResponseSubmitted from "./client/components/Static/ResponseSubmitted";
 import PageNotFound from "./client/components/Static/PageNotFound";
 import Reset from "./client/components/Reset/Reset";
 import AdminRecordsMain from "./client/components/AdminRecords/AdminRecordsMain";
 import AdminMain from "./client/components/Admin/AdminMain";
+import ReportsDashboard from "./client/components/AdminReports/ReportsDashboard";
+import Testing from "./Testing";
+
+import "./App.css";
 
 const App = () => {
-  const [user, loading, error] = useAuthState(auth);
+  const [user] = useAuthState(auth);
 
   const [employeeMail, setEmployeeMail] = useState("");
 
   const [isSubmitValid, setSubmitValid] = useState();
-  const [userData, setUserData] = useState([]);
 
   const [role, setRole] = useState();
 
@@ -39,40 +33,12 @@ const App = () => {
 
   const [adminMailId, setAdminMailId] = useState("");
   const [employeeMailId, setEmployeeMailId] = useState("");
-  const [userInfo, setUserInfo] = useState([]);
+
   const [approver, setApprover] = useState(true);
   const [name, setName] = useState("");
-  const [newName, setNewName] = useState("");
+
   const [employeeID, setEmployeeID] = useState("");
   const [account, setAccount] = useState([]);
-  const [uid, setUid] = useState("");
-  const localAuth = getAuth();
-  const localUser = localAuth.currentUser;
-
-  const navigate = useNavigate();
-
-  // console.log("current-user", localUser);
-  // const userAuthUrl = `https://login-firebase-7ae28-default-rtdb.firebaseio.com/UserAuth.json`;
-
-  // const getUser = async () => {
-  //   const userResponse = await axios.get(userAuthUrl);
-
-  //   // console.log("userData", userResponse.data);
-  //   const filteredUser = userResponse.data.filter(
-  //     (user) => user.uid === localUser.uid
-  //   );
-  //   if (filteredUser !== []) {
-  //     setUserData(filteredUser);
-
-  //     setRole(filteredUser[0].role);
-  //     setEmployeeID(filteredUser[0].employeeId);
-
-  //     setName(filteredUser[0].name);
-  //     setApproverMailId(filteredUser[0].approverMailId);
-  //     setAdminMailId(filteredUser[0].adminMailId);
-  //     setEmployeeMailId(filteredUser[0].emailID);
-  //   }
-  // };
 
   useEffect(() => {
     if (user) {
@@ -174,6 +140,20 @@ const App = () => {
             />
           }
         />
+        <Route
+          exact
+          path="/admin-reports"
+          element={
+            <ReportsDashboard
+              role={role}
+              employeeName={name}
+              employeeMailId={employeeMailId}
+              employeeID={employeeID}
+              approverMailId={approverMailId}
+              adminMailId={adminMailId}
+            />
+          }
+        />
 
         <Route
           exact
@@ -194,26 +174,6 @@ const App = () => {
             </Fragment>
           }
         />
-        {isSubmitValid ? (
-          <Route
-            exact
-            path="/form-Submitted"
-            element={
-              <Fragment>
-                <div
-                  className="form-main_div"
-                  style={{
-                    margin: "20px auto",
-                    maxWidth: "90vw",
-                    width: "640px",
-                  }}
-                >
-                  <ResponseSubmitted employeeMail={employeeMail} />
-                </div>
-              </Fragment>
-            }
-          />
-        ) : null}
 
         <Route
           exact
@@ -232,6 +192,7 @@ const App = () => {
         <Route exact path="/reset" element={<Reset />} />
 
         <Route path="*" element={<PageNotFound />} />
+        <Route exact path="/testing" element={<Testing />} />
       </Routes>
     </Fragment>
   );

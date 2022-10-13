@@ -15,7 +15,7 @@ import Footer from "../Footer/Footer";
 import axios from "axios";
 const ApproverRecordsMain = (props) => {
   const [user, loading, error] = useAuthState(auth);
-  const [adminData, setAdminData] = useState("");
+  const [adminData, setAdminData] = useState(false);
   const [adminRemRecords, setAdminRemRecords] = useState([]);
   const [spinner, setSpinner] = useState(false);
   const [adminAccessToken, setAdminAccessToken] = useState();
@@ -27,27 +27,25 @@ const ApproverRecordsMain = (props) => {
   useEffect(() => {
     if (loading) return;
     if (user) {
-      setAdminAccessToken(user.accessToken);
-      const timer = setTimeout(() => {
-        if (props.role === "admin") {
-          getAdminData();
-          return;
-        }
-        if (props.role === "user") {
-          return navigate("/");
-        }
-        if (props.role === "approver") {
-          return navigate("/approver-panel");
-        }
-      }, 1000);
-
-      return () => {
-        clearTimeout(timer);
-      };
+      if (props.role === "admin") {
+        setAdminData(true);
+        return;
+      }
+      if (props.role === "user") {
+        setAdminData(false);
+        return navigate("/");
+      }
+      if (props.role === "approver") {
+        setAdminData(false);
+        return navigate("/approver-panel");
+      }
     } else {
       setAdminAccessToken();
       return navigate("/login");
     }
+    return () => {
+      // clearTimeout(timer);
+    };
   }, [
     user,
     adminAccessToken,
@@ -57,20 +55,20 @@ const ApproverRecordsMain = (props) => {
     props.role,
   ]);
 
-  const approverFilterUrl = `${realtimeDbUrl}/ReimbursementRecords.json?auth=${adminAccessToken}&orderBy="EmployeeRole"&equalTo="admin"`;
+  // const approverFilterUrl = `${realtimeDbUrl}/ReimbursementRecords.json?auth=${adminAccessToken}&orderBy="EmployeeRole"&equalTo="admin"`;
 
-  const getAdminData = async () => {
-    setSpinner(true);
-    const response = await axios.get(approverFilterUrl);
-    setAdminData(response.data);
-    setSpinner(false);
+  // const getAdminData = async () => {
+  //   // setSpinner(true);
+  //   const response = await axios.get(approverFilterUrl);
+  //   setAdminData(response.data);
+  //   // setSpinner(false);
 
-    let adminSpecificData = response.data;
+  //   let adminSpecificData = response.data;
 
-    if (adminSpecificData) {
-      setAdminRemRecords(Object.keys(adminSpecificData));
-    }
-  };
+  //   if (adminSpecificData) {
+  //     setAdminRemRecords(Object.keys(adminSpecificData));
+  //   }
+  // };
 
   const tabFirstHandler = () => {
     setTab1(true);
@@ -113,7 +111,7 @@ const ApproverRecordsMain = (props) => {
           Admin Reimbursement Records
         </h1>
       </div>
-      {adminData ? (
+      {adminData === true ? (
         <div
           className="ui container"
           style={{

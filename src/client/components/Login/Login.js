@@ -11,12 +11,12 @@ import "./Login.css";
 const Login = (props) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-  const [fireBaseError, setFireBaseError] = useState("");
+
   const [user, loading, error] = useAuthState(auth);
-  const [role, setRole] = useState("");
+
   const [isLoading, setIsLoading] = useState(false);
+  const [isDisabled, setIsDisabled] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
   const [passwordShown, setPasswordShown] = useState(false);
   const navigate = useNavigate();
 
@@ -38,11 +38,11 @@ const Login = (props) => {
         if (props.role === "user") {
           navigate("/");
         }
-        if (props.role === undefined) {
-          setIsLoading(false);
-        }
-      }, 500);
 
+        // if (props.role === undefined) {
+        //   setIsDisabled(false);
+        // }
+      });
       return () => {
         clearTimeout(timer);
       };
@@ -55,38 +55,53 @@ const Login = (props) => {
     // );
     if (email !== "" && password !== "") {
       setIsLoading(true);
-      signInWithEmailAndPassword(auth, email, password).catch(function (error) {
-        switch (error.code) {
-          case "auth/Invalid-email":
-            toast.error("Invalid Email-Id");
-            setIsLoading(false);
-          case "auth/user-disabled":
-            toast.error(
-              "User credentials are disabled. Please contact the administrator."
-            );
-            setIsLoading(false);
-          case "auth/user-not-found":
-            toast.error("User Credentials are not Found");
-            setIsLoading(false);
-            break;
-          case "auth/wrong-password":
-            toast.error("Please enter the corrrect password.");
-            setIsLoading(false);
-            break;
-          default:
-            toast.error("Please enter correct credentials to login.");
-            setIsLoading(false);
-        }
-      });
+      setIsDisabled(true);
+      signInWithEmailAndPassword(auth, email, password)
+        .then(function () {
+          setIsLoading(false);
+          setIsDisabled(true);
+          setLoggedIn(true);
+        })
+        .catch(function (error) {
+          switch (error.code) {
+            case "auth/Invalid-email":
+              toast.error("Invalid Email-Id");
+              setIsLoading(false);
+              setIsDisabled(false);
+            case "auth/user-disabled":
+              toast.error(
+                "User credentials are disabled. Please contact the administrator."
+              );
+              setIsLoading(false);
+              setIsDisabled(false);
+            case "auth/user-not-found":
+              toast.error("User Credentials are not Found");
+              setIsLoading(false);
+              setIsDisabled(false);
+              break;
+            case "auth/wrong-password":
+              toast.error("Please enter the corrrect password.");
+              setIsLoading(false);
+              setIsDisabled(false);
+              break;
+            default:
+              toast.error("Please enter correct credentials to login.");
+              setIsLoading(false);
+              setIsDisabled(false);
+          }
+        });
     } else if (email === "" && password === "") {
       toast.error("Please enter your email & password");
       setIsLoading(false);
+      setIsDisabled(false);
     } else if (email === "") {
       toast.error("Please enter your email");
       setIsLoading(false);
+      setIsDisabled(false);
     } else if (password === "") {
       toast.error("Please enter your password.");
       setIsLoading(false);
+      setIsDisabled(false);
     }
   };
 
@@ -130,7 +145,7 @@ const Login = (props) => {
             type="text"
             className="login__textBox"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value.trim())}
             placeholder="E-mail Address"
           />
           {/* <p>{err.message}</p> */}
@@ -138,7 +153,7 @@ const Login = (props) => {
             type={passwordShown ? "text" : "password"}
             className="login__textBox"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value.trim())}
             placeholder="Password"
           />
           <div className="passswordShowBox">
@@ -159,9 +174,13 @@ const Login = (props) => {
                 : "ui secondary loading button login__btn"
             }
             onClick={singInHandler}
-            style={{ fontSize: "1.3rem" }}
+            disabled={isDisabled}
+            style={{
+              fontSize: "1.3rem",
+              backgroundColor: loggedIn ? "green" : "black",
+            }}
           >
-            Login
+            {loggedIn !== true ? "Login" : "Login Successfull !"}
           </button>
 
           <div>

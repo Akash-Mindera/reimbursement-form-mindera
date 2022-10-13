@@ -15,42 +15,42 @@ import realtimeDbUrl from "../../../server/dataBaseUrl";
 import axios from "axios";
 const UserMain = (props) => {
   const [user, loading, error] = useAuthState(auth);
-  const [userData, setUserData] = useState("");
+  const [userData, setUserData] = useState(false);
   const [userRemRecords, setUserRemRecords] = useState([]);
   const [spinner, setSpinner] = useState(false);
   const [tab1, setTab1] = useState(true);
   const [tab2, setTab2] = useState(false);
   const [tab3, setTab3] = useState(false);
   const [userAccessToken, setUserAccessToken] = useState("");
+
   const navigate = useNavigate();
 
   useEffect(() => {
     if (loading) return;
     if (user) {
-      setUserAccessToken(user.accessToken);
-      const timer = setTimeout(() => {
-        if (props.role === "user") {
-          getUserData();
-          return;
-        }
-        if (props.role === "admin") {
-          return navigate("/admin-panel");
-        }
-        if (props.role === "approver") {
-          return navigate("/approver-panel");
-        }
-      }, 1000);
+      // setUserAccessToken(user.accessToken);
 
-      return () => {
-        clearTimeout(timer);
-      };
+      if (props.role === "user") {
+        setUserData(true);
+        return;
+      }
+      if (props.role === "admin") {
+        setUserData(false);
+        return navigate("/admin-panel");
+      }
+      if (props.role === "approver") {
+        setUserData(false);
+        return navigate("/approver-panel");
+      }
     } else {
       setUserAccessToken();
       return navigate("/login");
     }
+    return () => {
+      // clearTimeout(timer);
+    };
   }, [
     user,
-    userAccessToken,
     loading,
     props.employeeID,
     props.name,
@@ -58,22 +58,6 @@ const UserMain = (props) => {
     props.approverMailId,
     props.adminMailId,
   ]);
-
-  const userFilterUrl = `${realtimeDbUrl}/ReimbursementRecords.json?auth=${userAccessToken}&orderBy="UserSpecificId"&equalTo="${props.employeeID}"`;
-
-  const getUserData = async () => {
-    setSpinner(true);
-
-    const response = await axios.get(userFilterUrl);
-    setUserData(response.data);
-    setSpinner(false);
-
-    let userSpecificData = response.data;
-
-    if (userSpecificData) {
-      setUserRemRecords(Object.keys(userSpecificData));
-    }
-  };
 
   const tabFirstHandler = () => {
     setTab1(true);
@@ -92,8 +76,6 @@ const UserMain = (props) => {
     setTab1(false);
     setTab2(false);
   };
-
-  // console.log("Access-Token", accessToken);
 
   return (
     <Fragment>
@@ -116,7 +98,7 @@ const UserMain = (props) => {
           User Panel
         </h1>
       </div>
-      {userData ? (
+      {userData === true ? (
         <div
           className="ui container"
           style={{
@@ -184,8 +166,12 @@ const UserMain = (props) => {
             data-tab="first"
           >
             <AwaitingAction
+              tab1={tab1}
               userRemRecords={userRemRecords}
               userData={userData}
+              employeeID={props.employeeID}
+              accessToken={userAccessToken}
+              role={props.role}
             />
           </div>
           <div
@@ -195,8 +181,11 @@ const UserMain = (props) => {
             data-tab="second"
           >
             <ApprovedRecord
+              tab2={tab2}
               userRemRecords={userRemRecords}
               userData={userData}
+              employeeID={props.employeeID}
+              accessToken={userAccessToken}
             />
           </div>
           <div
@@ -206,8 +195,11 @@ const UserMain = (props) => {
             data-tab="third"
           >
             <RejectedRecord
+              tab3={tab3}
               userRemRecords={userRemRecords}
               userData={userData}
+              employeeID={props.employeeID}
+              accessToken={userAccessToken}
             />
           </div>
         </div>

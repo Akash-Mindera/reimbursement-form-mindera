@@ -1,7 +1,6 @@
 import React from "react";
 import Card from "../../../utils/Card";
 import moment from "moment";
-import { useState } from "react";
 import "./ExpenseDate.css";
 const ExpenseDate = (props) => {
   // const [date, setDate] = useState("dd-mm-yy");

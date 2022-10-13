@@ -1,8 +1,7 @@
 import { initializeApp } from "firebase/app";
 import firebase from "firebase/compat/app";
-import "firebase/compat/database";
 
-import { getStorage } from "firebase/storage";
+import "firebase/compat/database";
 
 import {
   GoogleAuthProvider,
@@ -22,26 +21,17 @@ import {
   addDoc,
 } from "firebase/firestore";
 
-// tproject740@gmail.com firebase account is being used here //
+// akaszde97@gmail.com //
 const firebaseConfig = {
-  apiKey: "AIzaSyDjAWrbieMrJLlZFGoaCvvGxARcRQ_4lxg",
-  authDomain: "login-reimbursement-form.firebaseapp.com",
-  projectId: "login-reimbursement-form",
-  storageBucket: "login-reimbursement-form.appspot.com",
-  messagingSenderId: "586027704237",
-  appId: "1:586027704237:web:0d360f37b6e958973f8b24",
-  databaseURL: "https://login-reimbursement-form-default-rtdb.firebaseio.com",
+  apiKey: "AIzaSyAzDbWKJtT3zN3SExv_9TuRKMNa4ou9EPI",
+  authDomain: "reimbursement-portal.firebaseapp.com",
+  databaseURL: "https://reimbursement-portal-default-rtdb.firebaseio.com",
+  projectId: "reimbursement-portal",
+  storageBucket: "reimbursement-portal.appspot.com",
+  messagingSenderId: "827664897610",
+  appId: "1:827664897610:web:dad5160ce3a56cff6bf8b3",
+  measurementId: "G-TRNFB8ES1L",
 };
-
-// var firebaseConfiguration = {
-//   apiKey: "AIzaSyAtjflgMOZOqYaomSSV7Yi0Af-5uo5dITs",
-//   authDomain: "login-firebase-7ae28.firebaseapp.com",
-//   projectId: "login-firebase-7ae28",
-//   storageBucket: "login-firebase-7ae28.appspot.com",
-//   messagingSenderId: "830264245802",
-//   appId: "1:830264245802:web:9af3d31eb19700d7618d53",
-//   dataBaseURL: "https://login-reimbursement-form-default-rtdb.firebaseio.com/",
-// };
 
 const app = firebase.initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -125,8 +115,4 @@ export {
   sendPasswordResetEmail,
 };
 
-// const fireDb = firebase.initializeApp(firebaseConfiguration);
 export default app.database().ref();
-
-// const storage = getStorage(app);
-// export default storage;

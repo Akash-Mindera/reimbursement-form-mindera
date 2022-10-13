@@ -51,35 +51,33 @@ const AdminMain = (props) => {
     if (loading) return;
     if (user) {
       setAdminAccessToken(user.accessToken);
-      const timer = setTimeout(() => {
-        if (props.role === "admin") {
-          getAdminData();
-          return;
-        }
-        if (props.role === "approver") {
-          return navigate("/approver-panel");
-        }
-        if (props.role === "user") {
-          return navigate("/");
-        }
-      }, 500);
 
-      return () => {
-        clearTimeout(timer);
-      };
+      if (props.role === "admin") {
+        getAdminData();
+        return;
+      }
+      if (props.role === "approver") {
+        return navigate("/approver-panel");
+      }
+      if (props.role === "user") {
+        return navigate("/");
+      }
     } else {
       setAdminAccessToken();
       return navigate("/login");
     }
+    return () => {
+      // clearTimeout(timer);
+    };
   }, [user, adminAccessToken, props.role, loading, props.employeeMailId]);
 
   const fireBaseUrl = `${realtimeDbUrl}/ReimbursementRecords.json?auth=${adminAccessToken}`;
 
   const getAdminData = async () => {
-    setSpinner(true);
+    // setSpinner(true);
     const response = await axios.get(fireBaseUrl);
     setAdminData(response.data);
-    setSpinner(false);
+    // setSpinner(false);
     let adminData = response.data;
 
     if (adminData) {

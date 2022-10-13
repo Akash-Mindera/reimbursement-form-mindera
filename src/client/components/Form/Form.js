@@ -2,17 +2,15 @@ import React, { Fragment, Profiler } from "react";
 
 import { useState, useEffect } from "react";
 
-import { auth, logout } from "../../../server/firebase";
-import { query, collection, getDocs, where } from "firebase/firestore";
+import { auth, db } from "../../../server/firebase";
+
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+
 import axios from "axios";
 import realtimeDbUrl from "../../../server/dataBaseUrl";
+import fireStoreDbUrl from "../../../server/fireStoreUrl";
 
-import { Firestore } from "firebase/firestore";
-import emailjs from "emailjs-com";
-// import { collection } from "firebase/firestore";
 import Header from "../Header/Header";
 import FormImage from "./FormComponents/FormImage";
 import UserEmail from "./FormComponents/UserEmail";
@@ -30,24 +28,9 @@ import FormUrl from "./FormComponents/FormUrl";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-import ResponseSubmitted from "../Static/ResponseSubmitted";
-
-// API_KEY = 'SG.dKNoeZu-SZeV-5ii1X3OGA.fvTtiykVMfHsVP2TNnxSnMHDFLY6_AyJkuKdX6Uut1kCopied!'
-
-// import ReimbursementRequest from "../FormComponents/ReimbursementRequest";
-// import ReimbursementDetails from "./ReimbursementDetails";
-// import ReimbursementStatus from "../FormComponents/ReimbursementStatus";
-// import ReimbursementDate from "../FormComponents/ReimbursementDate";
-// import ReferenceNumber from "../FormComponents/ReferenceNumber";
-
 import Modal from "./Modal/Modal";
 
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-
 import { getAuth } from "firebase/auth";
-
-import storage from "../../../server/firebase.js";
-// import { async } from "@firebase/util";
 
 const Form = (props) => {
   const localAuth = getAuth();
@@ -70,7 +53,7 @@ const Form = (props) => {
   const [InvoiceNoError, setInvoiceNoError] = useState(false);
   const [refNoError, setRefNoError] = useState(false);
   const [descriptionError, setDescriptionError] = useState(false);
-  const [statusError, setStatusError] = useState(false);
+
   const [consentError, setConsentError] = useState(false);
   const [expenseItemsError, setExpenseItemsError] = useState(false);
   const [vendorItemsError, setVendorItemsError] = useState(false);
@@ -84,64 +67,35 @@ const Form = (props) => {
 
   const navigate = useNavigate();
 
-  // const fetchUserName = async () => {
-  //   try {
-  //     const q = query(collection(db, "users"), where("uid", "==", user?.uid));
-  //     const doc = await getDocs(q);
-  //   } catch (err) {
-  //     console.error(err);
-  //     alert("An error occured while fetching user data");
-  //   }
+  // const getDateValue = () => {
+  //   const storedDate = localStorage.getItem("date");
+  //   if (!storedDate)
+  //     return {
+  //       date: "",
+  //     };
+  //   return JSON.parse(storedDate);
   // };
-
-  const getDateValue = () => {
-    const storedDate = localStorage.getItem("date");
-    if (!storedDate)
-      return {
-        date: "",
-      };
-    return JSON.parse(storedDate);
-  };
-
-  const [date, setDate] = useState(getDateValue);
 
   useEffect(() => {
     if (loading) return;
     if (user) {
       setFormAccessToken(user.accessToken);
-      const timer = setTimeout(() => {
-        setEmployeeMail(user?.email);
-        setEmployeeTitle(props.employeeName);
-        setRole(props.userRole);
-        setAdminMailId(props.adminMailId);
-        setApproverMailId(props.approverMailId);
-        setEmployeeAccount(props.account);
-        localStorage.setItem("date", JSON.stringify(date));
-      }, 1000);
+      // const timer = setTimeout(() => {
+      setEmployeeMail(user?.email);
+      setEmployeeTitle(props.employeeName);
+      setRole(props.userRole);
+      setAdminMailId(props.adminMailId);
+      setApproverMailId(props.approverMailId);
+      setEmployeeAccount(props.account);
 
-      return () => {
-        clearTimeout(timer);
-      };
+      // }, 1000);
     } else {
       return navigate("/login");
     }
-  }, [user, formAccessToken, loading, date, props.userRole]);
-
-  // const userAuthUrl =
-  //   "https://login-firebase-7ae28-default-rtdb.firebaseio.com/UserAuth.json";
-
-  // const getUser = async () => {
-  //   const userResponse = await axios.get(userAuthUrl);
-
-  //   console.log("userData", userResponse.data);
-  //   const filteredUser = userResponse.data.filter(
-  //     (user) => user.uid === localUser.uid
-  //   );
-  //   setUserData(filteredUser);
-  //   console.log("filteredUser", filteredUser);
-  //   // console.log("Role", filteredUser[0].role);
-  //   setRole(filteredUser[0].role);
-  // };
+    return () => {
+      // clearTimeout(timer);
+    };
+  }, [user, formAccessToken, loading, props.userRole]);
 
   let id,
     mailId,
@@ -173,13 +127,9 @@ const Form = (props) => {
     setInvoiceNoError("");
     setConsent("");
     setConsentError("");
-    setReimbursement("");
-    setStatusError("");
     setInvoiceDate("");
     setInvoiceDateError(false);
     setDescription("");
-    setStaus("");
-    setRefNumber("");
     setPdfFileError("");
     setVendorItems("");
     setTheInputKey(randomString);
@@ -236,11 +186,6 @@ const Form = (props) => {
       setInvoiceDateError(false);
     }
 
-    // if (theInputKey === Math.random().toString(36)) {
-    //   setPdfFileError("This is a required Question");
-    //   return;
-    // }
-
     if (invoice === "") {
       setInvoiceNoError(true);
       return;
@@ -248,26 +193,12 @@ const Form = (props) => {
       setInvoiceNoError(false);
     }
 
-    // if (vendorItems === "Other:" && otherVendorName !== "") {
-    //   setVendorItemsError(true);
-    //   return;
-    // } else {
-    //   setVendorItemsError(false);
-    // }
-
     if (consent.value === undefined || consent.value === "") {
       setConsentError(true);
       return;
     } else {
       setConsentError(false);
     }
-
-    // if (reimbursement.value === undefined || reimbursement.value === "") {
-    //   setStatusError(true);
-    //   return;
-    // } else {
-    //   setStatusError(false);
-    // }
 
     if (emailId !== "" && !isValidEmail(emailId)) {
       setEmailError("Please enter a valid email");
@@ -297,30 +228,6 @@ const Form = (props) => {
       toast("You dont have an Account assigned !");
       return;
     }
-    // const storageRef = ref(storage, `${employeeMail}/${fileProof.name}`);
-
-    // // progress can be paused and resumed. It also exposes progress updates.
-    // // Receives the storage reference and the file to upload.
-    // const uploadTask = uploadBytesResumable(storageRef, fileProof);
-
-    // uploadTask.on(
-    //   "state_changed",
-    //   (snapshot) => {
-    //     const percent = Math.round(
-    //       (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-    //     );
-
-    //     // update progress
-    //     setPercent(percent);
-    //   },
-    //   (err) => console.log(err),
-    //   async () => {
-    //     // download url
-    //     const url = await getDownloadURL(uploadTask.snapshot.ref);
-
-    //     console.log("Url", url);
-    //   }
-    // );
 
     id = props.employeeID;
 
@@ -366,13 +273,14 @@ const Form = (props) => {
       setDisable(true);
       setSubmitText("Submitting ...");
       const res = await fetch(
-        `${realtimeDbUrl}/ReimbursementRecords.json?auth=${formAccessToken}`,
+        "/formData",
 
         {
           method: "POST",
 
-          Headers: {
+          headers: {
             "Content-Type": "application/json",
+            authToken: user.accessToken,
           },
           body: JSON.stringify({
             Time: new Date().toLocaleString(),
@@ -386,20 +294,19 @@ const Form = (props) => {
             ExpenseDate: date,
             ExpenseCategory:
               expenseItems === "Other:"
-                ? [expenseItems, otherExpenseValue]
+                ? `${(expenseItems, otherExpenseValue)}`
                 : expenseItems,
-
             AmountToBeRefunded: amount,
-
             ExpenseDescription: description,
             InvoiceNo: invoice,
             VendorName:
               vendorItems === "Other:"
-                ? [vendorItems, otherVendorName]
+                ? `${(vendorItems, otherVendorName)}`
                 : vendorItems,
             EmployeeConsent: consent.value,
             PaidTo: emailId,
             Invoice: pdfFile,
+            InvoiceFileName: invoiceFileName,
             InvoiceDate: invoiceDate,
             EmployeeRole: role,
             AdminMailId: adminMailId,
@@ -410,11 +317,12 @@ const Form = (props) => {
             RejectionReason: "",
             IsFundsProcessed: "",
             FundsRejectionReason: "",
+            createdAt: new Date().toJSON().slice(0, 10),
           }),
         }
       );
 
-      if (res.status === 200) {
+      if (res.status === 201) {
         await axios
           .post("/mail", body, {
             headers: {
@@ -448,12 +356,8 @@ const Form = (props) => {
         setInvoiceNoError("");
         setConsent("");
         setConsentError("");
-        setReimbursement("");
-        setStatusError("");
         setInvoiceDate("");
         setDescription("");
-        setStaus("");
-        setRefNumber("");
         setPdfFileError("");
         setTheInputKey(randomString);
         setVendorItems("");
@@ -469,24 +373,10 @@ const Form = (props) => {
 
     postData();
 
-    console.log(
-      `Date: ${date}`,
-      `Amount:${amount}`,
-      `Email:${emailId}`,
-      `Invoice:${invoice}`,
-      `Reference No: ${refNumber}`,
-      `Descriptiom: ${description}`,
-      `Invoice Date:${invoiceDate}`,
-      `Status:${status}`,
-      `Consent:${consent}`,
-      `Expense Items: ${expenseItems}`,
-      `Vendor Items:${vendorItems}`
-    );
-
-    // alert("Form Submitted Successfully");
-
     props.setSubmitValid(true);
   };
+
+  const [date, setDate] = useState("");
 
   const handleDateChange = (e) => {
     if (e.target.value === "") {
@@ -549,15 +439,6 @@ const Form = (props) => {
     // console.log(invoice);
   };
 
-  // Reference No
-
-  const [refNumber, setRefNumber] = useState("");
-
-  const refNoHandler = (e) => {
-    // console.log(e.target.value);
-    setRefNumber(e.target.value);
-  };
-
   // Expense Description
 
   const limit = 100;
@@ -570,33 +451,11 @@ const Form = (props) => {
     [limit, setDescription]
   );
 
-  // Reimbursement Request Status
-
-  const [reimbursement, setReimbursement] = useState([]);
-
-  const handleChoice = (reimbursement) => {
-    if (reimbursement.value === undefined || reimbursement.value === "") {
-      setStatusError(true);
-      setReimbursement(reimbursement[0]);
-    } else {
-      setStatusError(false);
-    }
-    setReimbursement(reimbursement);
-    // console.log("Change Detected", reimbursement.value);
-  };
-
-  const [status, setStaus] = useState([]);
-
-  const handleStatus = (status) => {
-    setStaus(status);
-    // console.log("Change Detected", status.value);
-  };
-
   // Invoice PDF
   const [pdfFile, setPdfFile] = useState("");
+  const [invoiceFileName, setInvoiceFileName] = useState("");
   const [fileProof, setFileProof] = useState("");
   const [theInputKey, setTheInputKey] = useState("");
-  // const fileType = ["application/pdf"];
 
   const handlePdfChange = (e) => {
     if (!e.target.files[0]) {
@@ -621,10 +480,8 @@ const Form = (props) => {
     let selectedFile = e.target.files[0];
     // console.log("File Type", selectedFile.type);
 
-    if (e.target.files[0]) {
-    }
-
     if (selectedFile) {
+      setInvoiceFileName(selectedFile.name);
       let reader = new FileReader();
       reader.readAsDataURL(selectedFile);
       reader.onloadend = (e) => {
@@ -634,22 +491,16 @@ const Form = (props) => {
       };
     } else {
       // setPdfFile(null);
+      setInvoiceFileName("");
       setPdfFileError("This is a required Question");
     }
 
     if (!selectedFile) {
       setPdfFile(null);
-      setPdfFileError("This is a required question");
+      setInvoiceFileName("");
+      setPdfFileError("This is a required Question");
     }
   };
-
-  // const handleResetPdf = (e) => {
-  //   e.preventDefault();
-  //   let randomString = Math.random().toString(36);
-  //   setTheInputKey(randomString);
-  //   setPdfFileError("This is a required Question");
-  //   console.log("clicked");
-  // };
 
   // Employee Consent
 
@@ -738,16 +589,6 @@ const Form = (props) => {
     setOtherVendorName("");
     // setVendorItemsError(false);
   };
-
-  // const newResponseHandler = (e) => {
-  //   e.preventDefault();
-  //   console.log(props.setIsFormSubmitted);
-  //   props.setIsFormSubmitted(false);
-  // };
-
-  // console.log("File upload URL", docUrl);
-  // console.log("Profile id the user", auth.currentUser.email);
-  // console.log("auth", auth.currentUser);
 
   return (
     <Fragment>
