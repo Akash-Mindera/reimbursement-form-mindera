@@ -26,11 +26,18 @@ const ApprovedResponses = (props) => {
 
   const [operation, setOperation] = useState(false);
 
+  const [lastIndex, setLastIndex] = useState("");
+
   const { promiseInProgress } = usePromiseTracker();
 
   useEffect(() => {
-    trackPromise(getResponse());
-  }, [user, props.employeeMailId]);
+    if (props.tab2) {
+      trackPromise(getResponse());
+      setEmployeeId("");
+      setCreatedAtDate("");
+      setOperation(false);
+    }
+  }, [user, props.tab2, props.employeeMailId]);
 
   const handleDataSearch = (e) => {
     setEmployeeId(e.target.value.trim().toUpperCase());
@@ -233,7 +240,7 @@ const ApprovedResponses = (props) => {
             <div className="detailsMaindiv">
               <div className="flexdetails">
                 <div className="flex-individual">
-                  {requireActionByApproverData.map((data, index) => (
+                  {requireActionByApproverData.map((data) => (
                     <div key={data._id} className="detailCardNew">
                       <div>
                         <div className="remList-single">

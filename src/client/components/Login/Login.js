@@ -26,27 +26,24 @@ const Login = (props) => {
       return;
     }
     if (user) {
-      const timer = setTimeout(() => {
-        if (props.role === "approver") {
-          navigate("/approver-panel");
-          return;
-        }
+      // const timer = setTimeout(() => {
+      if (props.role === "approver") {
+        navigate("/approver-panel");
+        return;
+      }
 
-        if (props.role === "admin") {
-          navigate("/admin-panel");
-        }
-        if (props.role === "user") {
-          navigate("/");
-        }
-
-        // if (props.role === undefined) {
-        //   setIsDisabled(false);
-        // }
-      });
-      return () => {
-        clearTimeout(timer);
-      };
+      if (props.role === "admin") {
+        navigate("/admin-panel");
+        return;
+      }
+      if (props.role === "user") {
+        navigate("/");
+      }
     }
+
+    return () => {
+      // props.role;
+    };
   }, [user, loading, props.role]);
 
   const singInHandler = () => {
@@ -59,8 +56,7 @@ const Login = (props) => {
       signInWithEmailAndPassword(auth, email, password)
         .then(function () {
           setIsLoading(false);
-          setIsDisabled(true);
-          setLoggedIn(true);
+          setIsDisabled(false);
         })
         .catch(function (error) {
           switch (error.code) {

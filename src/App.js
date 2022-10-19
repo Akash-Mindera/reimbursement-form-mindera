@@ -16,16 +16,15 @@ import Reset from "./client/components/Reset/Reset";
 import AdminRecordsMain from "./client/components/AdminRecords/AdminRecordsMain";
 import AdminMain from "./client/components/Admin/AdminMain";
 import ReportsDashboard from "./client/components/AdminReports/ReportsDashboard";
+import CreateNewEmployee from "./client/components/FireStoreDatabase/CreateNewEmployee";
 import Testing from "./Testing";
 
 import "./App.css";
 
 const App = () => {
-  const [user] = useAuthState(auth);
+  const [user, loading] = useAuthState(auth);
 
   const [employeeMail, setEmployeeMail] = useState("");
-
-  const [isSubmitValid, setSubmitValid] = useState();
 
   const [role, setRole] = useState();
 
@@ -41,11 +40,15 @@ const App = () => {
   const [account, setAccount] = useState([]);
 
   useEffect(() => {
+    if (loading) {
+      // maybe trigger a loading screen
+      return;
+    }
     if (user) {
       setEmployeeMail(user?.email);
-      // getUser();
-      fetchData();
+      fetchUserData();
     }
+
     return () => {
       setRole();
       setEmployeeID();
@@ -55,9 +58,9 @@ const App = () => {
       setAdminMailId();
       setEmployeeID();
     };
-  }, [user]);
+  }, [user, loading]);
 
-  const fetchData = async () => {
+  const fetchUserData = async () => {
     try {
       const q = query(
         collection(db, "UserAuth"),
@@ -75,12 +78,11 @@ const App = () => {
       setEmployeeMailId(data.emailID);
     } catch (err) {
       // console.error(err);
-      alert("Your Data has not been updated on the database");
       logout();
+      alert("Your Data has not been updated on the database");
     }
   };
 
-  // console.log("From App", role);
   return (
     <Fragment>
       <Routes>
@@ -88,7 +90,7 @@ const App = () => {
 
         <Route
           exact
-          path="/approver-panel"
+          path="/approver-panel/"
           element={
             <ApproverMain
               role={role}
@@ -161,7 +163,6 @@ const App = () => {
           element={
             <Fragment>
               <Form
-                setSubmitValid={setSubmitValid}
                 employeeID={employeeID}
                 userRole={role}
                 approver={approver}
@@ -188,6 +189,12 @@ const App = () => {
               account={account}
             />
           }
+        />
+
+        <Route
+          exact
+          path="/createNewEmployee"
+          element={<CreateNewEmployee />}
         />
         <Route exact path="/reset" element={<Reset />} />
 

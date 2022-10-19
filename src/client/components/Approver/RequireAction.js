@@ -28,19 +28,21 @@ const RequireAction = (props) => {
   const { promiseInProgress } = usePromiseTracker();
 
   useEffect(() => {
-    trackPromise(getResponse());
-  }, [user, props.employeeMailId]);
+    if (props.tab1 === true) {
+      trackPromise(getRequireActionResponse());
+    }
+  }, [user, props.tab1, props.employeeMailId]);
 
-  const handleDataSearch = (e) => {
+  const handleDataSearch = React.useCallback((e) => {
     setEmployeeId(e.target.value.trim().toUpperCase());
-  };
+  });
 
   const handleDateChange = (e) => {
     console.log(e.target.value);
     setCreatedAtDate(e.target.value);
   };
 
-  const getResponse = async () => {
+  const getRequireActionResponse = async () => {
     if (props.employeeMailId) {
       let API = `/requireActionByApprover/${props.employeeMailId}`;
       const response = await axios.get(`${API}?page=0`, {
@@ -56,6 +58,7 @@ const RequireAction = (props) => {
 
   const handleSearch = (e) => {
     setOperation(true);
+
     const getSearchResponse = async () => {
       if (employeeId !== "" && createdAtDate !== "") {
         const searchTerm = employeeId;
@@ -106,9 +109,8 @@ const RequireAction = (props) => {
     trackPromise(getSearchResponse());
   };
 
-  const handlePageClick = (data) => {
+  const handlePageClick = React.useCallback((data) => {
     let currentPage = data.selected;
-
     const paginatedResponse = async () => {
       let API = `/requireActionByApprover/${props.employeeMailId}`;
       const response = await axios.get(`${API}?page=${currentPage}`, {
@@ -121,23 +123,23 @@ const RequireAction = (props) => {
     };
 
     paginatedResponse();
-  };
+  }, []);
 
   const handleReset = () => {
-    trackPromise(getResponse());
+    trackPromise(getRequireActionResponse());
     setEmployeeId("");
     setCreatedAtDate("");
     setOperation(false);
   };
 
   const fetchLatestData = (e) => {
-    trackPromise(getResponse());
+    trackPromise(getRequireActionResponse());
     setEmployeeId("");
     setCreatedAtDate("");
     setOperation(false);
   };
 
-  // console.log("From require Action", props.approvalStates);
+  // console.log(auth.currentUser.toJSON());
 
   return (
     <Fragment>

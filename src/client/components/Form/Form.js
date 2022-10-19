@@ -372,8 +372,6 @@ const Form = (props) => {
     };
 
     postData();
-
-    props.setSubmitValid(true);
   };
 
   const [date, setDate] = useState("");

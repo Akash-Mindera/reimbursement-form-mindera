@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect, useState } from "react";
 import axios from "axios";
-
+import { Route, Routes, NavLink } from "react-router-dom";
 import { auth, db, logout } from "../../../server/firebase";
 import {
   query,
@@ -14,31 +14,36 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
 
 import Footer from "../Footer/Footer";
-import realtimeDbUrl from "../../../server/dataBaseUrl";
-import app from "../../../server/firebase";
 import ReimbursementData from "./ReimbursementData";
-import RequireAction from "./RequireAction";
-import ApprovedResponses from "./ApprovedResponses";
-import RejectedResponses from "./RejectedResponses";
+import RequireActionTab from "./TabRoutes/RequireActionTab";
+import ApprovedResponsesTab from "./TabRoutes/ApprovedResponsesTab";
+import RejectedResponsesTab from "./TabRoutes/RejectedResponsesTab";
 import Header from "../Header/Header";
 import RejectionModal from "./RejectionModal";
 import Loader from "../../utils/Loader";
 import ApprovalModal from "./ApprovalModal";
 import { ToastContainer, toast } from "react-toastify";
+import useTabHandler from "./Helpers/ApproverMain/TabHandler";
+
 import "react-toastify/dist/ReactToastify.css";
 import "./ApproverMain.css";
 
 const ApproverMain = (props) => {
   const [user, loading, error] = useAuthState(auth);
-  const [data, setData] = useState("");
 
-  const [remRecords, setRemRecords] = useState([]);
+  const {
+    tabFirstHandler,
+    tabSecondHandler,
+    tabThirdHandler,
+    tab1,
+    tab2,
+    tab3,
+  } = useTabHandler();
+
+  const [approverData, setApproverData] = useState(false);
 
   const [spinner, setSpinner] = useState(false);
 
-  const [tab1, setTab1] = useState(true);
-  const [tab2, setTab2] = useState(false);
-  const [tab3, setTab3] = useState(false);
   const [approverAccessToken, setApproverAccessToken] = useState();
 
   const [approveResponse, setApproveResponse] = useState();
@@ -113,11 +118,12 @@ const ApproverMain = (props) => {
 
   useEffect(() => {
     if (loading) return;
+
     if (user) {
-      setApproverAccessToken(user.accessToken);
+      // setApproverAccessToken(user.accessToken);
 
       if (props.role === "approver") {
-        getData();
+        setApproverData(true);
         return;
       }
       if (props.role === "user") {
@@ -127,10 +133,10 @@ const ApproverMain = (props) => {
         return navigate("/admin-panel");
       }
     } else {
-      setApproverAccessToken();
+      // setApproverAccessToken();
       return navigate("/login");
     }
-  }, [user, approverAccessToken, props.role, loading, props.employeeMailId]);
+  }, [user, props.role, loading, props.employeeMailId]);
 
   useEffect(() => {
     if (appShow) {
@@ -206,8 +212,6 @@ const ApproverMain = (props) => {
       alert(err);
     }
   };
-
-  const fireBaseUrl = `${realtimeDbUrl}/ReimbursementRecords.json?auth=${approverAccessToken}`;
 
   const approvalHandler = (id, index) => {
     console.log(id);
@@ -417,151 +421,120 @@ const ApproverMain = (props) => {
     }
   };
 
-  const tabFirstHandler = () => {
-    console.log("First Tab Clicked");
-
-    setTab1(true);
-    setTab2(false);
-    setTab3(false);
-  };
-
-  const tabSecondHandler = () => {
-    console.log("Second Tab Clicked");
-
-    setTab2(true);
-    setTab1(false);
-    setTab3(false);
-  };
-
-  const tabThirdHandler = () => {
-    console.log("Third Tab Clicked");
-    setTab3(true);
-    setTab1(false);
-    setTab2(false);
-  };
-
-  const getData = async () => {
-    // setSpinner(true);
-    const response = await axios.get(fireBaseUrl);
-    setData(response.data);
-    // setSpinner(false);
-    let latestData = response.data;
-    // console.log("latest", latestData);
-    if (latestData) {
-      setRemRecords(Object.keys(latestData));
-    }
-  };
-
   const rejectionInputHandler = (e) => {
     console.log(e.target.value);
     setRejectReason(e.target.value);
   };
 
-  const rejectionSubmitHandler = (e) => {
+  const rejectionSubmitHandler = async (e) => {
     e.preventDefault();
-    // const approverMailId = data[remId].ApproverMailId;
-    // const adminMailId = data[remId].AdminMailId;
-    // const rejectedEmailAddress = data[remId].EmployeeMail;
-    // const rejectedEmployeeName = data[remId].EmployeeName;
-    // const rejectedEmployeeId = data[remId].UserSpecificId;
-    // const rejectedAccount = rejectAccount.value;
-    // const rejectedAmount = data[remId].AmountToBeRefunded;
-    // const rejectedInvoiceDate = data[remId].InvoiceDate;
-    // const rejectedDescription = data[remId].ExpenseDescription;
-    // const rejectedConsent = data[remId].EmployeeConsent;
-    // const rejectedDate = data[remId].ExpenseDate;
-    // const rejectedInvoiceNo = data[remId].InvoiceNo;
-    // const rejectedVendor = data[remId].VendorName;
-    // const rejectedExpenseCategory = data[remId].ExpenseCategory;
-    // const rejectedPaidTo = data[remId].PaidTo;
-    // const rejectedFileLink = data[remId].Invoice;
-    // const rejectedReason = rejectReason;
-    // const body = {
-    //   adminMailId,
-    //   approverMailId,
-    //   rejectedEmailAddress,
-    //   rejectedEmployeeName,
-    //   rejectedEmployeeId,
-    //   rejectedAccount,
-    //   rejectedAmount,
-    //   rejectedInvoiceDate,
-    //   rejectedDescription,
-    //   rejectedConsent,
-    //   rejectedDate,
-    //   rejectedInvoiceNo,
-    //   rejectedVendor,
-    //   rejectedExpenseCategory,
-    //   rejectedPaidTo,
-    //   rejectedFileLink,
-    //   rejectedReason,
-    // };
-    // if (
-    //   rejectAccount.value === undefined ||
-    //   rejectAccount.value === "" ||
-    //   rejectAccount.value === "Choose"
-    // ) {
-    //   setRejectAccountError(true);
-    //   return;
-    // } else {
-    //   setRejectAccountError(false);
-    // }
+    const approverMailId = rejectionStates.approverMailId;
+    const adminMailId = rejectionStates.adminMailId;
+    const rejectedEmailAddress = rejectionStates.rejectedEmailAddress;
+    const rejectedEmployeeName = rejectionStates.rejectedEmployeeName;
+    const rejectedEmployeeId = rejectionStates.rejectedEmployeeId;
+    const rejectedAccount = rejectionStates.rejectedAccount;
+    const rejectedAmount = rejectionStates.rejectedAmount;
+    const rejectedInvoiceDate = rejectionStates.rejectedInvoiceDate;
+    const rejectedDescription = rejectionStates.rejectedDescription;
+    const rejectedConsent = rejectionStates.rejectedConsent;
+    const rejectedDate = rejectionStates.rejectedDate;
+    const rejectedInvoiceNo = rejectionStates.rejectedInvoiceDate;
+    const rejectedVendor = rejectionStates.rejectedVendor;
+    const rejectedExpenseCategory = rejectionStates.rejectedExpenseCategory;
+    const rejectedPaidTo = rejectionStates.rejectedPaidTo;
+    const rejectedFileLink = rejectionStates.rejectedFileLink;
+    const rejectedReason = rejectReason;
+    const body = {
+      adminMailId,
+      approverMailId,
+      rejectedEmailAddress,
+      rejectedEmployeeName,
+      rejectedEmployeeId,
+      rejectedAccount,
+      rejectedAmount,
+      rejectedInvoiceDate,
+      rejectedDescription,
+      rejectedConsent,
+      rejectedDate,
+      rejectedInvoiceNo,
+      rejectedVendor,
+      rejectedExpenseCategory,
+      rejectedPaidTo,
+      rejectedFileLink,
+      rejectedReason,
+    };
+    if (
+      rejectAccount.value === undefined ||
+      rejectAccount.value === "" ||
+      rejectAccount.value === "Choose"
+    ) {
+      setRejectAccountError(true);
+      return;
+    } else {
+      setRejectAccountError(false);
+    }
 
-    // if (rejectReason === "") {
-    //   setRejectError("Please Enter a Reason");
-    //   return;
-    // } else {
-    //   setRejectError("");
-    // }
+    if (rejectReason === "") {
+      setRejectError("Please Enter a Reason");
+      return;
+    } else {
+      setRejectError("");
+    }
 
-    // setRejectError("");
-    // setRejectAccountError(false);
-    // setIsDisabled(true);
-    // app
-    //   .child(`ReimbursementRecords/${remId}`)
-    //   .update({
-    //     IsApproved: "No",
-    //     RejectionReason: rejectReason,
-    //     RejectedAccount: rejectAccount.value,
-    //   })
-    //   .then(() => {
-    //     // setRejectResponse(index);
-    //     setRejectModalContent("Rejecting...");
-    //     axios
-    //       .post("/rejectionMail", body, {
-    //         headers: {
-    //           "Content-type": "application/json",
-    //         },
-    //       })
-    //       .then((res) => {
-    //         // alert("Rejection Mail Sent!");
-    //         setRejectModalContent("Rejection Mail Sent");
-    //         console.log(res);
-    //         setTimeout(() => {
-    //           window.location.reload(true);
-    //           // setAppShow(false);
-    //         }, 2000);
-    //       })
-    //       .catch((err) => {
-    //         // alert(
-    //         //   "There is an issue with the mailing service but the form is rejected"
-    //         // );
-    //         setRejectModalContent(
-    //           "There is an issue with the mailing service but the form is rejected"
-    //         );
-    //         console.log(err);
-    //         setTimeout(() => {
-    //           window.location.reload(true);
-    //         }, 2000);
-    //       });
-    //   })
-    //   .catch((err) => {
-    //     setIsDisabled(false);
-    //     console.log(err);
-    //     alert(
-    //       "There is an error with the db connection please try again after sometime."
-    //     );
-    //     setRejectReason("");
-    //   });
+    setRejectError("");
+    setRejectAccountError(false);
+    setIsDisabled(true);
+    const res = await fetch(`/setResponseRejected/${remId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        authToken: user.accessToken,
+      },
+      body: JSON.stringify({
+        IsApproved: "No",
+        RejectedAccount: rejectAccount.value,
+        RejectionReason: rejectReason,
+      }),
+    });
+    if (res.status === 201) {
+      // setRejectResponse(index);
+      setRejectModalContent("Rejecting...");
+      axios
+        .post("/rejectionMail", body, {
+          headers: {
+            "Content-type": "application/json",
+          },
+        })
+        .then((res) => {
+          // alert("Rejection Mail Sent!");
+          setRejectModalContent("Rejection Mail Sent");
+          console.log(res);
+          setTimeout(() => {
+            window.location.reload(true);
+            // setAppShow(false);
+          }, 2000);
+        })
+        .catch((err) => {
+          // alert(
+          //   "There is an issue with the mailing service but the form is rejected"
+          // );
+          setRejectModalContent(
+            "There is an issue with the mailing service but the form is rejected"
+          );
+          console.log(err);
+          setTimeout(() => {
+            window.location.reload(true);
+          }, 2000);
+        });
+    } else {
+      setIsDisabled(false);
+      // console.log(err);
+      alert(
+        "There is an error with the db connection please try again after sometime."
+      );
+      setRejectReason("");
+    }
   };
 
   const rejectAccountHandler = (rejectAccount) => {
@@ -589,7 +562,7 @@ const ApproverMain = (props) => {
     setRejectAccountError(false);
     setRejectError("");
     setRejectionAccountList([]);
-    setId("");
+    // setId("");
     setRejectionEmployeeId("");
     setRejectedFormDataById([]);
     setRejectionStates({
@@ -612,8 +585,6 @@ const ApproverMain = (props) => {
     });
   };
 
-  console.log(rejectedformDataById);
-
   return (
     <Fragment>
       {spinner && <Loader />}
@@ -631,108 +602,84 @@ const ApproverMain = (props) => {
           Approver Panel
         </h1>
       </div>
-      {/* {data ? ( */}
-      <div
-        className="ui container"
-        style={{
-          position: "inherit",
-          backgroundColor: "transparent !important",
-          border: "none",
-          boxShadow: " none",
-        }}
-      >
-        <ReimbursementData
-          remRecords={remRecords}
-          data={data}
-          employeeMailId={props.employeeMailId}
-        />
-
-        <div className="ui top attached tabular menu">
-          <a
-            className={`item ${tab1 === true ? "active" : ""}`}
-            data-tab="first"
-            onClick={tabFirstHandler}
-            style={{
-              width: "33.5%",
-              fontFamily: "Patrick Hand",
-              fontSize: "23px",
-              color: "red",
-            }}
-          >
-            Requires Action
-          </a>
-          <a
-            className={`item ${tab2 === true ? "active" : ""}`}
-            data-tab="second"
-            onClick={tabSecondHandler}
-            style={{
-              width: "33.5%",
-              fontFamily: "Patrick Hand",
-              fontSize: "23px",
-              color: "green",
-            }}
-          >
-            Approved Response
-          </a>
-          <a
-            className={`item ${tab3 === true ? "active" : ""}`}
-            data-tab="third"
-            onClick={tabThirdHandler}
-            style={{
-              width: "33.1%",
-              fontFamily: "Patrick Hand",
-              fontSize: "23px",
-              color: "green",
-            }}
-          >
-            Rejected Response
-          </a>
-        </div>
+      {approverData === true ? (
         <div
-          className={`ui bottom attached tab segment ${
-            tab1 === true ? "active" : ""
-          }`}
-          data-tab="first"
+          className="ui container"
+          style={{
+            position: "inherit",
+            backgroundColor: "transparent !important",
+            border: "none",
+            boxShadow: " none",
+          }}
         >
-          <RequireAction
-            remRecords={remRecords}
-            data={data}
+          <ReimbursementData
+            // data={data}
+            employeeMailId={props.employeeMailId}
+          />
+          <div className="ui top attached tabular menu">
+            <a
+              to="/approver-panel/requireAction"
+              className={`item ${tab1 === true ? "active" : ""}`}
+              data-tab="first"
+              onClick={tabFirstHandler}
+              style={{
+                width: "33.5%",
+                fontFamily: "Patrick Hand",
+                fontSize: "23px",
+                color: "red",
+              }}
+            >
+              Requires Action
+            </a>
+            <a
+              className={`item ${tab2 === true ? "active" : ""}`}
+              data-tab="second"
+              onClick={tabSecondHandler}
+              style={{
+                width: "33.5%",
+                fontFamily: "Patrick Hand",
+                fontSize: "23px",
+                color: "green",
+              }}
+            >
+              Approved Response
+            </a>
+            <a
+              className={`item ${tab3 === true ? "active" : ""}`}
+              data-tab="third"
+              onClick={tabThirdHandler}
+              style={{
+                width: "33.1%",
+                fontFamily: "Patrick Hand",
+                fontSize: "23px",
+                color: "green",
+              }}
+            >
+              Rejected Response
+            </a>
+          </div>
+
+          <RequireActionTab
             rejectResponse={rejectResponse}
             approveResponse={approveResponse}
             approvalHandler={approvalHandler}
             declineHandler={declineHandler}
             employeeMailId={props.employeeMailId}
-            approverAccessToken={approverAccessToken}
+            tab1={tab1}
           />
-        </div>
-        <div
-          className={`ui bottom attached tab segment ${
-            tab2 === true ? "active" : ""
-          }`}
-          data-tab="second"
-        >
-          <ApprovedResponses
-            remRecords={remRecords}
-            data={data}
+
+          <ApprovedResponsesTab
             employeeMailId={props.employeeMailId}
-            approverAccessToken={approverAccessToken}
+            tab2={tab2}
           />
-        </div>
-        <div
-          className={`ui bottom attached tab segment ${
-            tab3 === true ? "active" : ""
-          }`}
-          data-tab="third"
-        >
-          <RejectedResponses
-            remRecords={remRecords}
-            data={data}
+
+          <RejectedResponsesTab
+            // data={data}
             employeeMailId={props.employeeMailId}
-            approverAccessToken={approverAccessToken}
+            tab3={tab3}
           />
         </div>
-      </div>
-      {/* ) : (
+      ) : (
         <div
           style={{ maxWidth: "80%", margin: "auto" }}
           className="noRecords-div"
@@ -749,7 +696,7 @@ const ApproverMain = (props) => {
             Sorry! No Records Available
           </p>
         </div>
-      )} */}
+      )}
       <Footer />
       <ApprovalModal
         appShow={appShow}
@@ -759,7 +706,6 @@ const ApproverMain = (props) => {
         approvalSubmitHandler={approvalSubmitHandler}
         onClearApproveModalHandler={onClearApproveModalHandler}
         approveModalContent={approveModalContent}
-        data={data}
         account={account}
         handleOptionCreate={handleOptionCreate}
         selectAccountHandler={selectAccountHandler}
@@ -775,7 +721,6 @@ const ApproverMain = (props) => {
         rejectionInputHandler={rejectionInputHandler}
         rejectionSubmitHandler={rejectionSubmitHandler}
         remId={remId}
-        data={data}
         rejectReason={rejectReason}
         rejectError={rejectError}
         isDisabled={isDisabled}

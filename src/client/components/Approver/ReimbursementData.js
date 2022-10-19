@@ -1,33 +1,44 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useEffect, useState } from "react";
+import { auth } from "../../../server/firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { trackPromise } from "react-promise-tracker";
+import axios from "axios";
+
 import "./ApproverMain.css";
 
 const ReimbursementData = (props) => {
-  const totalUserRecords = props.remRecords.filter(
-    (id) =>
-      props.data[id].EmployeeRole !== "approver" &&
-      props.data[id].ApproverMailId === props.employeeMailId
-  );
+  const [user] = useAuthState(auth);
 
-  const filteredPendingApprovalRecords = props.remRecords.filter(
-    (id) =>
-      props.data[id].IsApproved === "" &&
-      props.data[id].EmployeeRole !== "approver" &&
-      props.data[id].ApproverMailId === props.employeeMailId
-  );
+  const [approverData, setApproverData] = useState({
+    total: 0,
+    totalApproved: 0,
+    totalDeclined: 0,
+    totalAwaited: 0,
+  });
 
-  const approvedRecords = props.remRecords.filter(
-    (id) =>
-      props.data[id].IsApproved === "Yes" &&
-      props.data[id].EmployeeRole !== "approver" &&
-      props.data[id].ApproverMailId === props.employeeMailId
-  );
+  useEffect(() => {
+    trackPromise(fetchTotalRecords());
+  }, [user, props.employeeMailId]);
 
-  const declinedRecords = props.remRecords.filter(
-    (id) =>
-      props.data[id].IsApproved === "No" &&
-      props.data[id].EmployeeRole !== "approver" &&
-      props.data[id].ApproverMailId === props.employeeMailId
-  );
+  const fetchTotalRecords = async () => {
+    if (props.employeeMailId) {
+      const response = await axios.get(
+        `/totalActionApproverRecords/${props.employeeMailId}`,
+        {
+          headers: {
+            authToken: user.accessToken,
+          },
+        }
+      );
+      setApproverData({
+        total: response.data.total,
+        totalApproved: response.data.totalApproved,
+        totalDeclined: response.data.totalDeclined,
+        totalAwaited: response.data.requireAction,
+      });
+    }
+  };
+
   return (
     <Fragment>
       <div className="ui segment" style={{ width: "300px" }}>
@@ -41,7 +52,7 @@ const ReimbursementData = (props) => {
                 color: "darkslategrey",
               }}
             >
-              Total Records: {totalUserRecords.length}
+              Total Records: {approverData.total}
             </p>
             <p
               style={{
@@ -50,7 +61,7 @@ const ReimbursementData = (props) => {
                 color: "blue",
               }}
             >
-              Approved Records: {approvedRecords.length}
+              Approved Records: {approverData.totalApproved}
             </p>
             <p
               style={{
@@ -59,7 +70,7 @@ const ReimbursementData = (props) => {
                 color: "red",
               }}
             >
-              Rejected Records: {declinedRecords.length}
+              Rejected Records: {approverData.totalDeclined}
             </p>
             <p
               style={{
@@ -68,7 +79,7 @@ const ReimbursementData = (props) => {
                 color: "brown",
               }}
             >
-              Require Action:{filteredPendingApprovalRecords.length}
+              Require Action:{approverData.totalAwaited}
             </p>
           </div>
         </div>

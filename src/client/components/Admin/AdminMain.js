@@ -328,108 +328,108 @@ const AdminMain = (props) => {
           Admin Panel
         </h1>
       </div>
-      {adminData ? (
+      {/* {adminData ? ( */}
+      <div
+        className="ui container"
+        style={{
+          position: "inherit",
+          backgroundColor: "transparent !important",
+          border: "none",
+          boxShadow: " none",
+        }}
+      >
+        <AdminData
+          adminRemRecords={adminRemRecords}
+          adminData={adminData}
+          employeeMailId={props.employeeMailId}
+        />
+        <div className="ui top attached tabular menu">
+          <a
+            className={`item ${tab1 === true ? "active" : ""}`}
+            data-tab="first"
+            onClick={tabFirstHandler}
+            style={{
+              width: "33.5%",
+              fontFamily: "Patrick Hand",
+              fontSize: "23px",
+              color: "red",
+            }}
+          >
+            Require Action By Admin
+          </a>
+          <a
+            className={`item ${tab2 === true ? "active" : ""}`}
+            data-tab="second"
+            onClick={tabSecondHandler}
+            style={{
+              width: "33.5%",
+              fontFamily: "Patrick Hand",
+              fontSize: "23px",
+              color: "green",
+            }}
+          >
+            Awaiting Action By Approver
+          </a>
+          <a
+            className={`item ${tab3 === true ? "active" : ""}`}
+            data-tab="third"
+            onClick={tabThirdHandler}
+            style={{
+              width: "33.1%",
+              fontFamily: "Patrick Hand",
+              fontSize: "23px",
+              color: "green",
+            }}
+          >
+            Rejected By Approver
+          </a>
+        </div>
         <div
-          className="ui container"
-          style={{
-            position: "inherit",
-            backgroundColor: "transparent !important",
-            border: "none",
-            boxShadow: " none",
-          }}
+          className={`ui bottom attached tab segment ${
+            tab1 === true ? "active" : ""
+          }`}
+          data-tab="first"
         >
-          <AdminData
+          <ApprovedRecords
+            adminRemRecords={adminRemRecords}
+            adminData={adminData}
+            isApproveDisabled={isApproveDisabled}
+            rejectResponse={rejectResponse}
+            approveResponse={approveResponse}
+            approvalHandler={approvalHandler}
+            declineHandler={declineHandler}
+            employeeMailId={props.employeeMailId}
+            adminAccessToken={adminAccessToken}
+          />
+        </div>
+        <div
+          className={`ui bottom attached tab segment ${
+            tab2 === true ? "active" : ""
+          }`}
+          data-tab="second"
+        >
+          <RequiresAction
             adminRemRecords={adminRemRecords}
             adminData={adminData}
             employeeMailId={props.employeeMailId}
+            adminAccessToken={adminAccessToken}
           />
-          <div className="ui top attached tabular menu">
-            <a
-              className={`item ${tab1 === true ? "active" : ""}`}
-              data-tab="first"
-              onClick={tabFirstHandler}
-              style={{
-                width: "33.5%",
-                fontFamily: "Patrick Hand",
-                fontSize: "23px",
-                color: "red",
-              }}
-            >
-              Require Action By Admin
-            </a>
-            <a
-              className={`item ${tab2 === true ? "active" : ""}`}
-              data-tab="second"
-              onClick={tabSecondHandler}
-              style={{
-                width: "33.5%",
-                fontFamily: "Patrick Hand",
-                fontSize: "23px",
-                color: "green",
-              }}
-            >
-              Awaiting Action By Approver
-            </a>
-            <a
-              className={`item ${tab3 === true ? "active" : ""}`}
-              data-tab="third"
-              onClick={tabThirdHandler}
-              style={{
-                width: "33.1%",
-                fontFamily: "Patrick Hand",
-                fontSize: "23px",
-                color: "green",
-              }}
-            >
-              Rejected By Approver
-            </a>
-          </div>
-          <div
-            className={`ui bottom attached tab segment ${
-              tab1 === true ? "active" : ""
-            }`}
-            data-tab="first"
-          >
-            <ApprovedRecords
-              adminRemRecords={adminRemRecords}
-              adminData={adminData}
-              isApproveDisabled={isApproveDisabled}
-              rejectResponse={rejectResponse}
-              approveResponse={approveResponse}
-              approvalHandler={approvalHandler}
-              declineHandler={declineHandler}
-              employeeMailId={props.employeeMailId}
-              adminAccessToken={adminAccessToken}
-            />
-          </div>
-          <div
-            className={`ui bottom attached tab segment ${
-              tab2 === true ? "active" : ""
-            }`}
-            data-tab="second"
-          >
-            <RequiresAction
-              adminRemRecords={adminRemRecords}
-              adminData={adminData}
-              employeeMailId={props.employeeMailId}
-              adminAccessToken={adminAccessToken}
-            />
-          </div>
-          <div
-            className={`ui bottom attached tab segment ${
-              tab3 === true ? "active" : ""
-            }`}
-            data-tab="third"
-          >
-            <RejectedRecord
-              adminRemRecords={adminRemRecords}
-              adminData={adminData}
-              employeeMailId={props.employeeMailId}
-              adminAccessToken={adminAccessToken}
-            />
-          </div>
         </div>
-      ) : (
+        <div
+          className={`ui bottom attached tab segment ${
+            tab3 === true ? "active" : ""
+          }`}
+          data-tab="third"
+        >
+          <RejectedRecord
+            adminRemRecords={adminRemRecords}
+            adminData={adminData}
+            employeeMailId={props.employeeMailId}
+            adminAccessToken={adminAccessToken}
+          />
+        </div>
+      </div>
+      {/* ) : (
         <div
           style={{ maxWidth: "80%", margin: "auto" }}
           className="noRecords-div"
@@ -446,7 +446,7 @@ const AdminMain = (props) => {
             Sorry! No Records Available
           </p>
         </div>
-      )}
+      )} */}
       <Footer />
       <ApprovalModal
         appShow={appShow}

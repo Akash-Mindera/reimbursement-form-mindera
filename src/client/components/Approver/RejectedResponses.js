@@ -1,317 +1,448 @@
-import React, { Fragment, useEffect } from "react";
-import { useState } from "react";
+import React, { Fragment } from "react";
+
+import { useState, useEffect } from "react";
+import moment from "moment";
+import { trackPromise } from "react-promise-tracker";
+import { usePromiseTracker } from "react-promise-tracker";
+import { ThreeDots } from "react-loader-spinner";
+
+import { auth } from "../../../server/firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
+import Pagination from "../../utils/ReactPaginate";
+import downloadBase64Data from "../../utils/FileSaver";
 import axios from "axios";
 import "./ApproverMain.css";
-import realtimeDbUrl from "../../../server/dataBaseUrl";
-import Pagination from "../../utils/Pagination";
 
 const RejectedResponses = (props) => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [user] = useAuthState(auth);
 
-  const [loadingState, setLoadingState] = useState(false);
-  const [searchRemRecords, setSearchRemRecords] = useState(props.remRecords);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [pageCount, setPageCount] = useState(0);
+  const [declinedActionByApproverData, setDeclinedActionByApproverData] =
+    useState([]);
 
-  const [postsPerPage] = useState(6);
+  const [employeeId, setEmployeeId] = useState("");
+
+  const [createdAtDate, setCreatedAtDate] = useState("");
+
+  const [operation, setOperation] = useState(false);
+
+  const { promiseInProgress } = usePromiseTracker();
+
+  useEffect(() => {
+    if (props.tab3 === true) {
+      trackPromise(getResponse());
+      setEmployeeId("");
+      setCreatedAtDate("");
+      setOperation(false);
+    }
+  }, [user, props.tab3, props.employeeMailId]);
 
   const handleDataSearch = (e) => {
-    setSearchTerm(e.target.value.trim());
+    setEmployeeId(e.target.value.trim().toUpperCase());
   };
 
-  const handleSearch = () => {
-    const filterUrl = `${realtimeDbUrl}/ReimbursementRecords.json?auth=${
-      props.approverAccessToken
-    }orderBy="UserSpecificId"&equalTo="${searchTerm.toLocaleUpperCase()}"`;
-    const filterRecords = async () => {
-      setLoadingState(true);
-      const res = await axios.get(filterUrl);
-      const filteredData = res.data;
-      if (searchTerm === "") {
-        setSearchRemRecords(props.remRecords);
-        setLoadingState(false);
+  const handleDateChange = (e) => {
+    console.log(e.target.value);
+    setCreatedAtDate(e.target.value);
+  };
+
+  const getResponse = async () => {
+    if (props.employeeMailId) {
+      let API = `/declinedActionByApprover/${props.employeeMailId}`;
+      const response = await axios.get(`${API}?page=0`, {
+        headers: {
+          authToken: user.accessToken,
+        },
+      });
+
+      setDeclinedActionByApproverData(response.data.data);
+      setPageCount(response.data.total);
+    }
+  };
+
+  const handleSearch = (e) => {
+    setOperation(true);
+    const getSearchResponse = async () => {
+      if (employeeId !== "" && createdAtDate !== "") {
+        const searchTerm = employeeId;
+        const dateTerm = createdAtDate;
+        let searchAPI = `/declinedActionByApproverUsingSearch/${props.employeeMailId}`;
+        const response = await axios.get(
+          `${searchAPI}?employeeId=${searchTerm}&createdAt=${dateTerm}`,
+          {
+            headers: {
+              authToken: user.accessToken,
+            },
+          }
+        );
+        setDeclinedActionByApproverData(response.data.data);
+      } else if (employeeId === "" && createdAtDate !== "") {
+        const dateTerm = createdAtDate;
+        let searchAPI = `/declinedActionByApproverUsingSearch/${props.employeeMailId}`;
+        const response = await axios.get(`${searchAPI}?createdAt=${dateTerm}`, {
+          headers: {
+            authToken: user.accessToken,
+          },
+        });
+        setDeclinedActionByApproverData(response.data.data);
+      } else if (employeeId !== "" && createdAtDate === "") {
+        const searchTerm = employeeId;
+        let searchAPI = `/declinedActionByApproverUsingSearch/${props.employeeMailId}`;
+        const response = await axios.get(
+          `${searchAPI}?employeeId=${searchTerm}`,
+          {
+            headers: {
+              authToken: user.accessToken,
+            },
+          }
+        );
+        setDeclinedActionByApproverData(response.data.data);
       } else {
-        setCurrentPage(1);
-        setSearchRemRecords(Object.keys(filteredData));
-        setLoadingState(false);
+        setOperation(false);
+        let API = `/approvedActionByApprover/${props.employeeMailId}`;
+        const response = await axios.get(`${API}?page=0`, {
+          headers: {
+            authToken: user.accessToken,
+          },
+        });
+        setDeclinedActionByApproverData(response.data.data);
+        setPageCount(response.data.total);
       }
     };
-    filterRecords();
+    trackPromise(getSearchResponse());
   };
 
-  const indexOfLastPost = currentPage * postsPerPage;
-  const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  const handlePageClick = (data) => {
+    let currentPage = data.selected;
 
-  const filteredRejectedRecords = searchRemRecords.filter(
-    (id) =>
-      props.data[id].IsApproved === "No" &&
-      props.data[id].ApproverMailId === props.employeeMailId
-  );
+    const paginatedResponse = async () => {
+      let API = `/declinedActionByApprover/${props.employeeMailId}`;
+      const response = await axios.get(`${API}?page=${currentPage}`, {
+        headers: {
+          authToken: user.accessToken,
+        },
+      });
 
-  const currentRejectedRecords = filteredRejectedRecords.slice(
-    indexOfFirstPost,
-    indexOfLastPost
-  );
+      setDeclinedActionByApproverData(response.data.data);
+    };
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+    paginatedResponse();
+  };
+
+  const handleReset = () => {
+    trackPromise(getResponse());
+    setEmployeeId("");
+    setCreatedAtDate("");
+    setOperation(false);
+  };
+
+  const fetchLatestData = (e) => {
+    trackPromise(getResponse());
+    setEmployeeId("");
+    setCreatedAtDate("");
+    setOperation(false);
+  };
 
   return (
     <Fragment>
-      <label
-        style={{
-          display: "block",
-          width: "100%",
-          marginBottom: "10px",
-        }}
-      >
-        <p
+      {promiseInProgress === true ? (
+        <div
           style={{
-            fontFamily: "Patrick Hand",
-            fontSize: "18px",
-            fontWeight: "500",
+            display: "flex",
+            justifyContent: "center",
+            alignItem: "center",
           }}
         >
-          Search By Employee ID
-        </p>
-      </label>
-
-      <div className="ui category search" style={{ display: "inline-block" }}>
-        <div className="ui icon input">
-          <input
-            className="prompt"
-            type="text"
-            placeholder="Employee-ID"
-            onChange={handleDataSearch}
-            value={searchTerm}
+          <ThreeDots
+            height="80"
+            width="80"
+            radius="9"
+            color="#4fa94d"
+            ariaLabel="three-dots-loading"
+            wrapperStyle={{}}
+            wrapperClassName=""
+            visible={true}
           />
-          <i className="search icon"></i>
-        </div>
-      </div>
-
-      <button
-        className={!loadingState ? "ui button" : "ui loading button"}
-        onClick={handleSearch}
-        style={{ marginLeft: "10px" }}
-      >
-        Search
-      </button>
-
-      {currentRejectedRecords.length !== 0 ? (
-        <div className="detailsMaindiv">
-          <div className="flexdetails">
-            <div className="flex-individual">
-              {currentRejectedRecords.map((id) => (
-                <div key={id} className="detailCardNew">
-                  <div>
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Reimbursement ID:{" "}
-                        <span className="spanDta-field">{id}</span>
-                      </h3>
-                    </div>
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Employee ID:{" "}
-                        <span className="spanDta-field">
-                          {props.data[id].UserSpecificId}
-                        </span>
-                      </h3>
-                    </div>
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Employee Account:{" "}
-                        <span className="spanDta-field">
-                          {props.data[id].RejectedAccount}
-                        </span>
-                      </h3>
-                    </div>
-
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Employee Mail:{" "}
-                        <span className="spanDta-field">
-                          {props.data[id].EmployeeMail}
-                        </span>
-                      </h3>
-                    </div>
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Expense Date:{" "}
-                        <span className="spanDta-field">
-                          {props.data[id].ExpenseDate}
-                        </span>
-                      </h3>
-                    </div>
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Expense Category:{" "}
-                        <span className="spanDta-field">
-                          {props.data[id].ExpenseCategory}
-                        </span>
-                      </h3>
-                    </div>
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Amount To Be Refunded:{" "}
-                        <span className="spanDta-field">
-                          {props.data[id].AmountToBeRefunded}
-                        </span>
-                      </h3>
-                    </div>
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Invoice Attachment:{" "}
-                        <a
-                          download={props.data[id].Invoice}
-                          href={props.data[id].Invoice}
-                          title="Download pdf document"
-                        >
-                          Link
-                        </a>
-                      </h3>
-                    </div>
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Invoice Date:{" "}
-                        <span className="spanDta-field">
-                          {props.data[id].InvoiceDate}
-                        </span>
-                      </h3>
-                    </div>
-                    {props.data[id].ExpenseDescription ? (
-                      <div className="remList-single">
-                        <h3 className="h3Field-class">
-                          Expense Description:{" "}
-                          <span className="spanDta-field">
-                            {props.data[id].ExpenseDescription}
-                          </span>
-                        </h3>
-                      </div>
-                    ) : null}
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Invoice Number:{" "}
-                        <span className="spanDta-field">
-                          {props.data[id].InvoiceNo}
-                        </span>
-                      </h3>
-                    </div>
-                    {props.data[id].VendorName ? (
-                      <div className="remList-single">
-                        <h3 className="h3Field-class">
-                          Expense Description:{" "}
-                          <span className="spanDta-field">
-                            {props.data[id].VendorName}
-                          </span>
-                        </h3>
-                      </div>
-                    ) : null}
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Employee Consent:{" "}
-                        <span className="spanDta-field">
-                          {props.data[id].EmployeeConsent}
-                        </span>
-                      </h3>
-                    </div>
-                    {props.data[id].PaidTo ? (
-                      <div className="remList-single">
-                        <h3 className="h3Field-class">
-                          Paid To:{" "}
-                          <span className="spanDta-field">
-                            {props.data[id].PaidTo}
-                          </span>
-                        </h3>
-                      </div>
-                    ) : null}
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Time:{" "}
-                        <span className="spanDta-field">
-                          {props.data[id].Time}
-                        </span>
-                      </h3>
-                    </div>
-                    <div className="remList-single">
-                      <h3 className="h3Field-class">
-                        Rejection Reason:{" "}
-                        <span className="spanDta-field">
-                          {props.data[id].RejectionReason}
-                        </span>
-                      </h3>
-                    </div>
-                  </div>
-
-                  {props.data[id].IsApproved === "Yes" && (
-                    <div
-                      className="ui two buttons"
-                      style={{ paddingTop: "12px" }}
-                    >
-                      <button
-                        className="ui green button"
-                        style={{
-                          fontSize: "18px",
-                          cursor: "default",
-                          fontFamily: "Patrick Hand",
-                          fontWeight: "500",
-                        }}
-                      >
-                        Approved
-                      </button>
-                    </div>
-                  )}
-                  {props.data[id].IsApproved === "No" && (
-                    <div
-                      className="ui two buttons"
-                      style={{ paddingTop: "12px" }}
-                    >
-                      {" "}
-                      <button
-                        className="ui red button"
-                        style={{
-                          fontSize: "18px",
-                          cursor: "default",
-                          fontFamily: "Patrick Hand",
-                          fontWeight: "500",
-                        }}
-                      >
-                        Rejected
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-          <div
-            style={{
-              margin: "auto",
-              maxWidth: "80%",
-              paddingTop: "20px",
-            }}
-          >
-            <Pagination
-              postsPerPage={postsPerPage}
-              totalPosts={filteredRejectedRecords.length}
-              paginate={paginate}
-            />
-          </div>
         </div>
       ) : (
-        <div
-          style={{ margin: "auto", marginTop: "20px" }}
-          className="noRecords-div"
-        >
-          <p
+        <div>
+          <label
             style={{
-              fontFamily: "Patrick Hand",
-              fontSize: "22px",
-              color: "black",
-              fontWeight: "500",
-              textAlign: "center",
+              display: "block",
+              width: "100%",
+              marginBottom: "10px",
             }}
           >
-            No Data Found !
-          </p>
+            <p
+              style={{
+                fontFamily: "Patrick Hand",
+                fontSize: "18px",
+                fontWeight: "500",
+              }}
+            >
+              Search By Employee ID & Created Date
+            </p>
+          </label>
+
+          <div
+            className="ui category search"
+            style={{ display: "inline-block" }}
+          >
+            <div className="ui icon input">
+              <input
+                // ref={inputRef}
+                className="prompt"
+                type="text"
+                placeholder="Employee-ID"
+                onChange={handleDataSearch}
+                value={employeeId}
+              />
+              <i className="search icon"></i>
+            </div>
+          </div>
+
+          <input
+            type="date"
+            onChange={handleDateChange}
+            value={createdAtDate}
+            className="expenseApproverInput"
+            mandatory="true"
+            max={moment().format("YYYY-MM-DD")}
+            onKeyDown={props.disableKeyDown}
+          />
+
+          <button
+            className={"ui button"}
+            onClick={handleSearch}
+            style={{ marginLeft: "10px" }}
+          >
+            Search
+          </button>
+
+          <button
+            className={"ui secondary button"}
+            onClick={handleReset}
+            style={{ marginLeft: "10px" }}
+          >
+            Reset
+          </button>
+
+          <div style={{ display: "block", marginTop: "15px" }}>
+            {" "}
+            <button className="ui teal basic button" onClick={fetchLatestData}>
+              {promiseInProgress === true ? "Fetching..." : "Fetch Latest Data"}
+            </button>
+          </div>
+
+          {declinedActionByApproverData.length !== 0 ? (
+            <div className="detailsMaindiv">
+              <div className="flexdetails">
+                <div className="flex-individual">
+                  {declinedActionByApproverData.map((data) => (
+                    <div key={data._id} className="detailCardNew">
+                      <div>
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Reimbursement Id:{" "}
+                            <span className="spanDta-field">{data._id}</span>
+                          </h3>
+                        </div>
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Employee ID:{" "}
+                            <span className="spanDta-field">
+                              {data.UserSpecificId}
+                            </span>
+                          </h3>
+                        </div>
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Approved For:{" "}
+                            <span className="spanDta-field">
+                              {data.RejectedAccount}
+                            </span>
+                          </h3>
+                        </div>
+
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Employee Mail:{" "}
+                            <span className="spanDta-field">
+                              {data.EmployeeMail}
+                            </span>
+                          </h3>
+                        </div>
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Expense Date:{" "}
+                            <span className="spanDta-field">
+                              {data.ExpenseDate}
+                            </span>
+                          </h3>
+                        </div>
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Expense Category:{" "}
+                            <span className="spanDta-field">
+                              {data.ExpenseCategory}
+                            </span>
+                          </h3>
+                        </div>
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Amount To Be Refunded:{" "}
+                            <span className="spanDta-field">
+                              {data.AmountToBeRefunded}
+                            </span>
+                          </h3>
+                        </div>
+
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Invoice Attachment:{" "}
+                            <button
+                              style={{
+                                color: "var(--bs-link-color)",
+                                textDecoration: "underline",
+                                border: "none",
+                                background: "transparent",
+                                fontWeight: "600",
+                              }}
+                              onClick={() =>
+                                downloadBase64Data(
+                                  data.Invoice,
+                                  data.InvoiceFileName
+                                )
+                              }
+                            >
+                              Download
+                            </button>
+                          </h3>
+                        </div>
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Invoice Date:{" "}
+                            <span className="spanDta-field">
+                              {data.InvoiceDate}
+                            </span>
+                          </h3>
+                        </div>
+                        {data.ExpenseDescription ? (
+                          <div className="remList-single">
+                            <h3 className="h3Field-class">
+                              Expense Description:{" "}
+                              <span className="spanDta-field">
+                                {data.ExpenseDescription}
+                              </span>
+                            </h3>
+                          </div>
+                        ) : null}
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Invoice Number:{" "}
+                            <span className="spanDta-field">
+                              {data.InvoiceNo}
+                            </span>
+                          </h3>
+                        </div>
+                        {data.VendorName ? (
+                          <div className="remList-single">
+                            <h3 className="h3Field-class">
+                              Vendor Name:{" "}
+                              <span className="spanDta-field">
+                                {data.VendorName}
+                              </span>
+                            </h3>
+                          </div>
+                        ) : null}
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Employee Consent:{" "}
+                            <span className="spanDta-field">
+                              {data.EmployeeConsent}
+                            </span>
+                          </h3>
+                        </div>
+                        {data.PaidTo ? (
+                          <div className="remList-single">
+                            <h3 className="h3Field-class">
+                              Paid To:{" "}
+                              <span className="spanDta-field">
+                                {data.PaidTo}
+                              </span>
+                            </h3>
+                          </div>
+                        ) : null}
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Time:{" "}
+                            <span className="spanDta-field">{data.Time}</span>
+                          </h3>
+                        </div>
+                        <div className="remList-single">
+                          <h3 className="h3Field-class">
+                            Created At:{" "}
+                            <span className="spanDta-field">
+                              {data.createdAt}
+                            </span>
+                          </h3>
+                        </div>
+                      </div>
+                      {data.IsApproved === "No" && (
+                        <div
+                          className="ui two buttons"
+                          style={{ paddingTop: "12px" }}
+                        >
+                          <button
+                            className="ui red button"
+                            style={{
+                              fontSize: "18px",
+                              cursor: "default",
+                              fontFamily: "Patrick Hand",
+                              fontWeight: "500",
+                            }}
+                          >
+                            Rejected
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div
+                style={{
+                  margin: "auto",
+                  maxWidth: "80%",
+                  paddingTop: "20px",
+                }}
+              >
+                {operation !== true && (
+                  <Pagination
+                    pageCount={pageCount}
+                    onPageChange={handlePageClick}
+                  />
+                )}
+              </div>
+            </div>
+          ) : (
+            <div
+              style={{ margin: "auto", marginTop: "20px" }}
+              className="noRecords-div"
+            >
+              <p
+                style={{
+                  fontFamily: "Patrick Hand",
+                  fontSize: "22px",
+                  color: "black",
+                  fontWeight: "500",
+                  textAlign: "center",
+                }}
+              >
+                No Data Found!
+              </p>
+            </div>
+          )}
         </div>
       )}
     </Fragment>

@@ -8,6 +8,7 @@ import {
   getAuth,
   signInWithPopup,
   signInWithEmailAndPassword,
+  beforeUserSignedIn,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   signOut,
@@ -74,7 +75,7 @@ const logInWithEmailAndPassword = async (email, password) => {
     }
   }
 };
-const registerWithEmailAndPassword = async (name, email, password, role) => {
+const registerWithEmailAndPassword = async (name, email, password) => {
   try {
     const res = await createUserWithEmailAndPassword(auth, email, password);
     const user = res.user;
